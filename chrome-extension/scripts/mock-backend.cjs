@@ -1,9 +1,5 @@
 #!/usr/bin/env node
-/* Simple mock backend for local testing of the extension.
- * Endpoints:
- *  - POST /clip  -> returns 201 { ok: true }
- *  - GET  /clips -> returns 200 { items: [] }
- */
+// CommonJS version to work with package "type": "module"
 const http = require('http');
 
 const port = process.env.MOCK_PORT ? Number(process.env.MOCK_PORT) : 8000;

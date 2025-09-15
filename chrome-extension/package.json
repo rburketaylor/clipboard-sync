@@ -11,7 +11,7 @@
     "lint": "eslint 'src/**/*.{ts,vue}'",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
-    "mock:backend": "node scripts/mock-backend.js",
+    "mock:backend": "node scripts/mock-backend.cjs",
     "zip": "npm run build && cd dist && zip -r ../clipboard-sync-extension.zip ."
   },
   "keywords": ["clipboard", "sync", "chrome", "extension"],
