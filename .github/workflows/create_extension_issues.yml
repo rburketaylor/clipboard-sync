@@ -1,0 +1,35 @@
+name: Create Extension Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview without creating issues"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Create labels and issues from JSON
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          bash scripts/create_gh_issues.sh
+
+      - name: Done
+        run: echo "Issue creation workflow completed."
+
