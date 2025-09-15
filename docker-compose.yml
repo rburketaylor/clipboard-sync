@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://clipboarduser:clipboardpass@db:5432/clipboarddb
+      - PYTHONPATH=/app
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - clipboard-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=clipboarddb
+      - POSTGRES_USER=clipboarduser
+      - POSTGRES_PASSWORD=clipboardpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - clipboard-network
+
+volumes:
+  postgres_data:
+
+networks:
+  clipboard-network:
+    driver: bridge
