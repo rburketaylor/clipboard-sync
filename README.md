@@ -127,6 +127,46 @@ cd electron-app && npm test
 cd chrome-extension && npm test
 ```
 
+## Creating GitHub Issues (Chrome Extension Plan)
+
+This repo includes a helper to create all tracked issues for the Chrome Extension plan in one go.
+
+- Script: `scripts/create_gh_issues.sh`
+- Source of truth: `issues/extension_issues.json`
+
+Prerequisites
+- `jq`, `curl`, and `git` installed
+- A GitHub token with permission to create issues in this repo
+  - Classic: `repo` scope
+  - Fine‑grained: Issues: Read/Write for this repository
+
+Usage
+```bash
+# 1) Provide a token (do not commit tokens)
+export GITHUB_TOKEN=ghp_your_token_here
+
+# 2) Optional: override target repo if your local git remote differs
+export REPO=rburketaylor/clipboard-sync
+
+# 3) Preview (no changes to GitHub)
+DRY_RUN=true ./scripts/create_gh_issues.sh
+
+# 4) Create labels and issues
+./scripts/create_gh_issues.sh
+```
+
+Notes
+- The script is idempotent for labels but does not deduplicate already‑created issues. Use `DRY_RUN=true` first.
+- It auto‑detects `owner/repo` from `origin` if `REPO` is not set.
+- It creates labels: `area:extension`, `type:task`, `priority:normal`, and `M1`–`M6`.
+
+Quick Verify
+```bash
+curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+  "https://api.github.com/repos/${REPO:-$(git config --get remote.origin.url | sed -n 's#.*github.com[:/]\(.*\)\.git#\1#p')}/issues?labels=area:extension" \
+  | jq '.[].title'
+```
+
 ## Docker Services
 
 The application uses Docker Compose to orchestrate the backend services:
