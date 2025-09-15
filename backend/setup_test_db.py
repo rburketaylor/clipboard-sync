@@ -9,7 +9,9 @@ from sqlalchemy import create_engine, text
 
 # Test database configuration
 TEST_DB_NAME = "clipboard_sync_test"
-POSTGRES_URL = "postgresql://postgres:password@localhost:5432"
+POSTGRES_USER = os.getenv("POSTGRES_USER", "clipboarduser")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "clipboardpass_change_me_in_production")
+POSTGRES_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432"
 TEST_DATABASE_URL = f"{POSTGRES_URL}/{TEST_DB_NAME}"
 
 def create_test_database():

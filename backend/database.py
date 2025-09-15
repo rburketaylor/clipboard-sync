@@ -10,7 +10,7 @@ from models import Base
 # Database configuration
 DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "postgresql://postgres:password@localhost:5432/clipboard_sync"
+    "postgresql://clipboarduser:clipboardpass_change_me_in_production@localhost:5432/clipboarddb"
 )
 
 # Create engine with connection pooling

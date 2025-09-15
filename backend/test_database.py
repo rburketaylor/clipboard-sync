@@ -23,7 +23,7 @@ except ImportError as e:
 # Test database configuration (PostgreSQL for testing)
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL", 
-    "postgresql://postgres:password@localhost:5432/clipboard_sync_test"
+    "postgresql://clipboarduser:clipboardpass_change_me_in_production@localhost:5432/clipboard_sync_test"
 )
 
 
