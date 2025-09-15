@@ -48,7 +48,16 @@ clipboard-sync/
    pip install -r requirements.txt
    ```
 
-4. Start the backend and database with Docker:
+4. **Configure Environment Variables**:
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+   
+   # Edit .env and set secure passwords
+   # IMPORTANT: Change the default passwords before running in production!
+   ```
+
+5. Start the backend and database with Docker:
    ```bash
    docker-compose up
    ```
@@ -124,6 +133,37 @@ The application uses Docker Compose to orchestrate the backend services:
 
 - **backend**: FastAPI application (port 8000)
 - **db**: PostgreSQL database (port 5432)
+
+## Security Configuration
+
+### Environment Variables
+
+The application uses environment variables for sensitive configuration. Key security practices:
+
+1. **Never commit `.env` files** - They contain sensitive credentials
+2. **Use `.env.example`** - Template showing required variables without sensitive values
+3. **Change default passwords** - Always use strong, unique passwords in production
+4. **Database credentials** - Stored in environment variables, not hardcoded
+
+### Production Deployment
+
+For production environments:
+
+1. Use strong, randomly generated passwords
+2. Consider using Docker secrets or external secret management
+3. Enable SSL/TLS for database connections
+4. Restrict database access to application containers only
+5. Regular security updates for all dependencies
+
+### Environment Variables Reference
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `POSTGRES_DB` | Database name | `clipboarddb` |
+| `POSTGRES_USER` | Database user | `clipboarduser` |
+| `POSTGRES_PASSWORD` | Database password | `clipboardpass_change_me_in_production` |
+| `DATABASE_URL` | Full database connection string | Auto-generated from above |
+| `TEST_DATABASE_URL` | Test database connection string | Auto-generated for testing |
 
 ## License
 
