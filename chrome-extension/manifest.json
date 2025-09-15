@@ -18,10 +18,10 @@
     "scripting"
   ],
   "host_permissions": [
-    "http://localhost:8000/*"
+    "http://localhost/*",
+    "http://127.0.0.1/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8000 ws://127.0.0.1:17373"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost http://127.0.0.1 ws://localhost ws://127.0.0.1"
   }
 }
-

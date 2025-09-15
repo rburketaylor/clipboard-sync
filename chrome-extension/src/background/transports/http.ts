@@ -11,3 +11,12 @@ export async function sendViaHttp(baseUrl: string, payload: { content?: string; 
   }
 }
 
+export async function pingViaHttp(baseUrl: string): Promise<boolean> {
+  const url = `${baseUrl.replace(/\/$/, '')}/health`;
+  try {
+    const res = await fetch(url, { method: 'GET' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

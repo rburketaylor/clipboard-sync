@@ -17,8 +17,8 @@
     </section>
 
     <div style="display:flex; gap:8px;">
-      <button @click="send('text')" :disabled="!selection || busy">{{ busy ? 'Sending…' : 'Send Text' }}</button>
-      <button @click="send('url')" :disabled="!tabMeta?.href || busy">{{ busy ? 'Sending…' : 'Send URL' }}</button>
+      <button :disabled="!selection || busy" @click="send('text')">{{ busy ? 'Sending…' : 'Send Text' }}</button>
+      <button :disabled="!tabMeta?.href || busy" @click="send('url')">{{ busy ? 'Sending…' : 'Send URL' }}</button>
     </div>
 
     <p v-if="message" :style="{color: messageOk ? '#0a7' : '#c00', marginTop: '10px', fontSize:'12px'}">{{ message }}</p>
@@ -77,4 +77,3 @@ button { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; backgrou
 button:hover { background: #f3f4f6; }
 button:disabled { opacity: .6; cursor: not-allowed; }
 </style>
-

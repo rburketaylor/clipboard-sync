@@ -22,8 +22,13 @@ const App = {
       saved.value = 'Saved!';
       setTimeout(() => (saved.value = ''), 1500);
     }
+    async function testConnection() {
+      const res = await chrome.runtime.sendMessage({ kind: 'testConnection' });
+      saved.value = res?.ok ? 'Connection OK' : 'Connection failed';
+      setTimeout(() => (saved.value = ''), 1500);
+    }
 
-    return { backendBaseUrl, mode, wsUrl, debug, save, saved };
+    return { backendBaseUrl, mode, wsUrl, debug, save, saved, testConnection };
   },
   template: `
   <div>
@@ -55,10 +60,10 @@ const App = {
     </div>
 
     <button @click="save">Save</button>
+    <button style="margin-left:8px;" @click="testConnection">Test Connection</button>
     <span style="margin-left:8px; color:#0a7;">{{ saved }}</span>
   </div>
   `
 };
 
 createApp(App).mount('#app');
-
