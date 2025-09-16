@@ -1,130 +1,118 @@
 # Clipboard Sync
 
-A cross-platform clipboard synchronization system that enables users to capture text selections and URLs from Chrome browser and synchronize them across a desktop application.
+Clipboard Sync is a small cross‑stack system that lets you capture text selections or page URLs in Chrome and sync them to a desktop app backed by a FastAPI service and PostgreSQL. It’s designed to be simple, local‑first, and easy to run with Docker.
 
 ## Architecture
 
-The system consists of four main components:
+Four components work together:
 
-- **Chrome Extension** (Vue.js): Captures text selections and URLs from web pages
-- **Electron Desktop App** (Vue.js + Node.js): Displays clipboard history and manages data flow
-- **Python Backend API** (FastAPI): Handles business logic and data validation
-- **PostgreSQL Database**: Provides persistent storage for clipboard entries
+- **Chrome Extension** (Vite + Vue 3, MV3): Captures selected text and active tab URL/title and sends them to the backend (HTTP). Native messaging and WebSocket transports exist behind a feature flag for future use.
+- **Electron Desktop App** (Electron 38): Shows recent clips and lets you create new ones; talks to the backend via `BACKEND_URL`.
+- **Python Backend API** (FastAPI): Validates and persists clips; provides `/health`, `/clip`, and `/clips` endpoints.
+- **PostgreSQL**: Storage for clipboard entries.
 
 ## Project Structure
 
 ```
 clipboard-sync/
-├── chrome-extension/     # Chrome extension with Vue.js
-├── electron-app/         # Electron desktop application
-├── backend/              # Python FastAPI backend
-├── docker-compose.yml    # Docker orchestration
-└── README.md            # This file
+├── chrome-extension/       # Chrome extension (Vite + Vue 3, MV3)
+├── electron-app/           # Electron desktop app (tray + renderer)
+├── backend/                # FastAPI backend + SQLAlchemy models
+├── scripts/                # Utility scripts (e.g., create_gh_issues.sh)
+├── issues/                 # Tracked tasks for the extension plan
+├── docker-compose.yml      # Dev Compose (backend + db)
+├── docker-compose.prod.yml # Production overrides
+└── README.md               # This file
 ```
 
-## Development Setup
+## Quick Start
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- Python 3.11+
-- Docker and Docker Compose
-- Chrome browser for extension development
+- Node.js 20+
+- Python 3.11+ (only if running backend locally; Docker recommended)
+- Docker + Docker Compose
+- Chrome browser
 
-### Backend Setup
+### 1) Backend + DB (Docker)
 
-1. Set up the Python virtual environment using pyenv:
+1. Copy and edit environment variables:
    ```bash
-   pyenv activate clipboardsync-env
-   ```
-
-2. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-3. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure Environment Variables**:
-   ```bash
-   # Copy the example environment file
    cp .env.example .env
-   
-   # Edit .env and set secure passwords
-   # IMPORTANT: Change the default passwords before running in production!
+   # IMPORTANT: set a strong POSTGRES_PASSWORD and update DATABASE_URL accordingly
    ```
-
-5. Start the backend and database with Docker:
+2. Start services:
    ```bash
-   docker-compose up
+   docker compose up -d
    ```
-
-The backend API will be available at `http://localhost:8000`
-
-**Note**: Always use the `clipboardsync-env` pyenv environment when working with Python components of this project.
-
-### Electron App Setup
-
-1. Navigate to the electron-app directory:
+3. Wait for health checks, then verify:
    ```bash
-   cd electron-app
+   curl -s http://localhost:8000/health
+   # -> {"status":"ok","database":true}
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+The backend runs at `http://localhost:8000`.
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+To run locally without Docker:
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
+```
 
-### Chrome Extension Setup
+### 2) Electron App
 
-1. Navigate to the chrome-extension directory:
-   ```bash
-   cd chrome-extension
-   ```
+```bash
+cd electron-app
+npm install
+# Uses BACKEND_URL (defaults to http://localhost:8000)
+BACKEND_URL=http://localhost:8000 npm start
+# or: npm run dev    # opens DevTools
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 3) Chrome Extension
 
-3. Build the extension:
-   ```bash
-   npm run build
-   ```
+```bash
+cd chrome-extension
+npm install
+npm run dev   # builds to dist/ and watches for changes
+```
 
-4. Load the extension in Chrome:
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode"
-   - Click "Load unpacked" and select the `chrome-extension/dist` folder
+Load in Chrome:
+- Visit `chrome://extensions`
+- Enable Developer mode
+- Load unpacked → select `chrome-extension/dist`
+
+Configure via Options:
+- Transport: HTTP (default). Native and WebSocket modes are present but disabled in the UI for now.
+- Backend URL: `http://localhost:8000` (or your target)
+- Use “Test Connection” to verify reachability.
 
 ## API Endpoints
 
-- `POST /clip` - Create a new clipboard entry
-- `GET /clips` - Retrieve recent clipboard entries
-- `GET /health` - Health check endpoint
+- `GET /health` → `{ status: "ok", database: true|false }`
+- `POST /clip` → create a clip
+  - Body: `{ type: "text"|"url", content: string, title?: string }`
+  - Constraints: `content` 1..10,000 chars; `title` ≤ 500; when `type=url`, only `http(s)` with a host is accepted.
+  - Returns: `{ id, type, content, title, created_at }` (201)
+- `GET /clips?limit=10` → latest clips (limit 1..100)
 
 ## Testing
 
-Each component includes its own test suite:
-
 ```bash
-# Backend tests (use pyenv environment)
-pyenv activate clipboardsync-env
-cd backend && python -m pytest
+# Backend
+cd backend
+python -m venv .venv && source .venv/bin/activate   # if not using Docker
+python -m pytest
 
-# Electron app tests
-cd electron-app && npm test
+# Chrome Extension
+cd chrome-extension
+npm test
 
-# Chrome extension tests
-cd chrome-extension && npm test
+# Electron App (placeholder)
+cd electron-app
+# (no tests yet)
 ```
 
 ## Creating GitHub Issues (Chrome Extension Plan)
@@ -169,47 +157,43 @@ curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
 
 ## Docker Services
 
-The application uses Docker Compose to orchestrate the backend services:
+Dev Compose orchestrates:
 
-- **backend**: FastAPI application (port 8000)
-- **db**: PostgreSQL database (port 5432)
+- **backend**: FastAPI (port 8000). Health‑checked and waits for DB.
+- **db**: PostgreSQL (port 5432). Named volume `postgres_data_v2`.
+
+Production overrides (`docker-compose.prod.yml`):
+- Removes live bind‑mounts and reload flags
+- Doesn’t expose DB port
+- Sets `ENVIRONMENT=production` and `LOG_LEVEL=info`
 
 ## Electron App
 
-A minimal Electron desktop app is included under `electron-app/` to view and create clips.
+The desktop app shows recent clips and lets you create/copy entries. It talks to the backend at `BACKEND_URL` (defaults to `http://localhost:8000`).
 
-- Prerequisites: Node 18+ and a running backend at `http://localhost:8000` (default).
-- Start backend and DB: `docker compose up -d`
-- Run the app:
-
-```bash
-cd electron-app
-npm install
-npm start        # use `npm run dev` to open DevTools
-```
-
-The renderer displays recent clips and lets you create new ones or pull text from your system clipboard. Set `BACKEND_URL` to override the API endpoint.
-
-## Security Configuration
+## Security & Config
 
 ### Environment Variables
 
-The application uses environment variables for sensitive configuration. Key security practices:
+Use environment variables for sensitive settings:
 
-1. **Never commit `.env` files** - They contain sensitive credentials
-2. **Use `.env.example`** - Template showing required variables without sensitive values
-3. **Change default passwords** - Always use strong, unique passwords in production
-4. **Database credentials** - Stored in environment variables, not hardcoded
+1. **Don’t commit `.env` files**
+2. **Use `.env.example`** as a guide
+3. **Change default passwords** before any non‑local use
+4. **Database credentials** are provided via env, not hard‑coded
+
+### CORS (dev)
+
+Non‑production runs enable permissive CORS for the extension to talk to the backend during development.
 
 ### Production Deployment
 
-For production environments:
-
-1. Use strong, randomly generated passwords
-2. Consider using Docker secrets or external secret management
-3. Enable SSL/TLS for database connections
-4. Restrict database access to application containers only
-5. Regular security updates for all dependencies
+For production:
+- Use strong, randomly generated passwords
+- Consider Docker secrets or external secret management
+- Enable TLS for DB connections where applicable
+- Restrict DB access to application containers only
+- Keep dependencies updated
 
 ### Environment Variables Reference
 
@@ -220,6 +204,19 @@ For production environments:
 | `POSTGRES_PASSWORD` | Database password | `clipboardpass_change_me_in_production` |
 | `DATABASE_URL` | Full database connection string | Auto-generated from above |
 | `TEST_DATABASE_URL` | Test database connection string | Auto-generated for testing |
+
+## CI
+
+GitHub Actions workflow builds and tests the Chrome extension and uploads the built `dist/` as an artifact (`.github/workflows/extension_ci.yml`).
+
+## Recent Changes (highlights)
+
+- 2025-09-16: Electron desktop app added; tray UI and clipboard helpers; `BACKEND_URL` support.
+- 2025-09-16: Extension: reliable selection + tab meta capture; URL send guarded to http(s); MV3 permissions and CSP refined.
+- 2025-09-16: Backend: healthcheck script integrated; dependencies bumped; URL validation via `urlparse` (http/https only).
+- 2025-09-16: Docker: renamed Postgres volume to `postgres_data_v2`; Compose waits on healthy DB.
+- 2025-09-15: Extension: WS and Native transports scaffolded; Options page with Test Connection; CI workflow for build/test/artifact.
+- 2025-09-15: Backend: initial FastAPI app with `/health`, `/clip`, `/clips`; dev CORS enabled; tables created on startup.
 
 ## License
 
