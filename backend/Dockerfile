@@ -29,9 +29,10 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+# Add healthcheck script and configure health check
+COPY healthcheck.py /usr/local/bin/healthcheck.py
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python /usr/local/bin/healthcheck.py
 
 # Command to run the application
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
