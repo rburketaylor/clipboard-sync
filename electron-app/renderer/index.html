@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clipboard Sync</title>
+    <style>
+      :root { color-scheme: light dark; }
+      html, body { height: 100%; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; margin: 0; overflow-x: hidden; }
+      header { padding: 12px 16px; border-bottom: 1px solid #0002; display: flex; align-items: center; gap: 12px; min-width: 0; }
+      main { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1100px; margin: 0 auto; box-sizing: border-box; }
+      .card { border: 1px solid #0002; border-radius: 8px; padding: 12px; background: #fff2; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      input, textarea, select, button { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid #0003; background: #fff3; }
+      textarea { width: 100%; min-height: 80px; resize: vertical; }
+      ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
+      li { border: 1px solid #0002; border-radius: 6px; padding: 8px; background: #fff3; min-width: 0; }
+      .muted { opacity: .7; }
+      .actions { display: flex; gap: 8px; }
+      .badge { padding: 2px 6px; border-radius: 999px; border: 1px solid #0003; font-size: 12px; }
+      footer { padding: 8px 16px; border-top: 1px solid #0002; font-size: 12px; display: flex; justify-content: space-between; max-width: 1100px; margin: 0 auto; }
+      code#backend-url { display: inline-block; max-width: 40vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+      .clip-grid { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 12px; }
+      .content-wrap { overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
+      @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Clipboard Sync</strong>
+      <span class="muted" style="min-width:0">Backend: <code id="backend-url"></code></span>
+      <span style="flex:1"></span>
+      <button id="refresh">Refresh</button>
+    </header>
+    <main>
+      <section class="card">
+        <h3>New Clip</h3>
+        <div class="row">
+          <label for="type">Type</label>
+          <select id="type">
+            <option value="text" selected>text</option>
+            <option value="url">url</option>
+          </select>
+        </div>
+        <div style="margin-top:8px">
+          <textarea id="content" placeholder="Enter text or URL…"></textarea>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <input id="title" placeholder="Optional title" style="flex:1" />
+          <button id="from-clipboard">From Clipboard</button>
+          <button id="create">Create</button>
+        </div>
+      </section>
+      <section class="card">
+        <h3>Recent Clips</h3>
+        <ul id="clips"></ul>
+      </section>
+    </main>
+    <footer>
+      <span id="status" class="muted">Idle</span>
+      <span class="muted">v1</span>
+    </footer>
+    <script src="renderer.js" type="module"></script>
+  </body>
+  </html>

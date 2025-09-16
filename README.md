@@ -174,6 +174,22 @@ The application uses Docker Compose to orchestrate the backend services:
 - **backend**: FastAPI application (port 8000)
 - **db**: PostgreSQL database (port 5432)
 
+## Electron App
+
+A minimal Electron desktop app is included under `electron-app/` to view and create clips.
+
+- Prerequisites: Node 18+ and a running backend at `http://localhost:8000` (default).
+- Start backend and DB: `docker compose up -d`
+- Run the app:
+
+```bash
+cd electron-app
+npm install
+npm start        # use `npm run dev` to open DevTools
+```
+
+The renderer displays recent clips and lets you create new ones or pull text from your system clipboard. Set `BACKEND_URL` to override the API endpoint.
+
 ## Security Configuration
 
 ### Environment Variables
