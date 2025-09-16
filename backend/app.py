@@ -2,7 +2,8 @@ from typing import List, Optional, Literal
 
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, HttpUrl, ValidationError
+from pydantic import BaseModel, Field
+from urllib.parse import urlparse
 from sqlalchemy.orm import Session
 
 from database import get_db, db_manager
@@ -17,10 +18,9 @@ class ClipCreate(BaseModel):
 
     def validate_business(self):
         if self.type == 'url':
-            # Validate URL format using Pydantic
-            try:
-                HttpUrl.validate_python(self.content)
-            except ValidationError:
+            # Validate URL format (allow only http/https with non-empty host)
+            parsed = urlparse(self.content)
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
                 raise HTTPException(status_code=422, detail='content must be a valid URL when type=url')
 
 
@@ -92,4 +92,3 @@ def list_clips(limit: int = Query(10, ge=1, le=100), db: Session = Depends(get_d
         )
         for c in rows
     ]
-
