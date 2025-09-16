@@ -5,26 +5,70 @@ import { sendViaWs, pingViaWs } from './transports/ws';
 
 type ClipPayload = { content?: string; type: 'text' | 'url'; title?: string };
 
-async function executeScriptsOnActiveTab<T>(files: string[]): Promise<T | null> {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) return null;
-  let lastResult: any = null;
-  for (const file of files) {
-    const [result] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: [file]
-    });
-    lastResult = result?.result ?? lastResult;
+// Use lastFocusedWindow for reliability from a service worker context
+async function getActiveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  return tab;
+}
+
+// Inline page functions to avoid relying on built file paths
+function pageReadSelection() {
+  try {
+    const sel = window.getSelection?.();
+    let text = sel ? String(sel) : '';
+    if (!text) {
+      const ae = document.activeElement as any;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) {
+        const start = ae.selectionStart ?? 0;
+        const end = ae.selectionEnd ?? 0;
+        if (typeof ae.value === 'string' && end > start) text = ae.value.slice(start, end);
+      }
+    }
+    return (text || '').trim();
+  } catch {
+    return '';
   }
-  return lastResult as T | null;
+}
+
+function pageReadTabMeta() {
+  try {
+    return { href: location.href, title: document.title };
+  } catch {
+    return { href: '', title: '' };
+  }
+}
+
+async function readSelectionFromActiveTab(): Promise<string | null> {
+  const tab = await getActiveTab();
+  if (!tab?.id) return null;
+  const results = await chrome.scripting.executeScript({
+    target: { tabId: tab.id, allFrames: true },
+    func: pageReadSelection
+  });
+  const strings = results
+    .map(r => (typeof r.result === 'string' ? r.result.trim() : ''))
+    .filter(s => s.length > 0)
+    .sort((a, b) => b.length - a.length);
+  return strings[0] ?? '';
+}
+
+async function readTabMetaFromActiveTab(): Promise<{ href: string; title: string } | null> {
+  const tab = await getActiveTab();
+  if (!tab?.id) return null;
+  // Run only in the top frame for accuracy
+  const [result] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id, frameIds: [0] },
+    func: pageReadTabMeta
+  });
+  return (result?.result as any) ?? null;
 }
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     if (msg?.kind === 'popupOpened') {
       try {
-        const selection = await executeScriptsOnActiveTab<string>(['src/content/selection.ts']);
-        const tabMeta = await executeScriptsOnActiveTab<{ href: string; title: string }>(['src/content/tabMeta.ts']);
+        const selection = await readSelectionFromActiveTab();
+        const tabMeta = await readTabMetaFromActiveTab();
         sendResponse({ selection, tabMeta });
       } catch (e: any) {
         sendResponse({ selection: '', tabMeta: null, error: e?.message || String(e) });

@@ -65,6 +65,10 @@ onMounted(async () => {
     const res = await chrome.runtime.sendMessage({ kind: 'popupOpened' });
     selection.value = res?.selection || '';
     tabMeta.value = res?.tabMeta || null;
+    if (res?.error) {
+      messageOk.value = false;
+      message.value = `Read error: ${res.error}`;
+    }
   } catch (e) {
     // ignore
   }
