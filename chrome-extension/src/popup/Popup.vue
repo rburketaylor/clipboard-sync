@@ -18,7 +18,7 @@
 
     <div style="display:flex; gap:8px;">
       <button :disabled="!selection || busy" @click="send('text')">{{ busy ? 'Sending…' : 'Send Text' }}</button>
-      <button :disabled="!tabMeta?.href || busy" @click="send('url')">{{ busy ? 'Sending…' : 'Send URL' }}</button>
+      <button :disabled="!urlAllowed || busy" @click="send('url')">{{ busy ? 'Sending…' : 'Send URL' }}</button>
     </div>
 
     <p v-if="message" :style="{color: messageOk ? '#0a7' : '#c00', marginTop: '10px', fontSize:'12px'}">{{ message }}</p>
@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 type TabMeta = { href: string; title: string } | null;
 
@@ -36,6 +36,10 @@ const tabMeta = ref<TabMeta>(null);
 const busy = ref(false);
 const message = ref('');
 const messageOk = ref(false);
+const urlAllowed = computed(() => {
+  const href = tabMeta.value?.href || '';
+  return /^https?:\/\//i.test(href);
+});
 
 function openOptions() {
   chrome.runtime.openOptionsPage();
