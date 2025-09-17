@@ -6,15 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Clipboard Sync</title>
     <style>
-      :root { color-scheme: light dark; }
+      :root {
+        color-scheme: light dark;
+        --accent: #1a73e8;
+        /* Light theme defaults */
+        --field-bg: #ffffff;
+        --field-fg: #111111;
+        --field-border: #00000033; /* #0003 */
+        --surface-bg: #00000008;   /* subtle card tint over page bg */
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          /* Dark theme overrides */
+          --field-bg: #1f2430;
+          --field-fg: #f5f7fa;
+          --field-border: #ffffff26; /* #fff4-ish but subtler */
+          --surface-bg: #ffffff0f;
+        }
+      }
       html, body { height: 100%; }
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; margin: 0; overflow-x: hidden; }
       header { padding: 12px 16px; border-bottom: 1px solid #0002; display: flex; align-items: center; gap: 12px; min-width: 0; }
       main { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1100px; margin: 0 auto; box-sizing: border-box; }
-      .card { border: 1px solid #0002; border-radius: 8px; padding: 12px; background: #fff2; }
+      .card { border: 1px solid #0002; border-radius: 8px; padding: 12px; background: var(--surface-bg); }
       .row { display: flex; gap: 8px; align-items: center; }
-      input, textarea, select, button { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid #0003; background: #fff3; }
+      /* Ensure controls don't overflow their containers */
+      input, textarea, select, button {
+        font: inherit;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--field-border);
+        background: var(--field-bg);
+        color: var(--field-fg);
+        box-sizing: border-box;
+        max-width: 100%;
+        transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .06s ease;
+      }
+      input::placeholder, textarea::placeholder { color: color-mix(in oklab, var(--field-fg), transparent 40%); }
       textarea { width: 100%; min-height: 80px; resize: vertical; }
+      /* Safer default to avoid any stray overflow */
+      *, *::before, *::after { box-sizing: border-box; }
+      /* Interactive affordances */
+      button, select { cursor: pointer; }
+      button:hover, button:focus-visible { outline: none; background: color-mix(in oklab, var(--field-bg), #000 6%); border-color: color-mix(in oklab, var(--accent), #000 20%); box-shadow: 0 1px 2px #0002, 0 0 0 2px color-mix(in oklab, var(--accent), transparent 70%); }
+      button:active { transform: translateY(1px); box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent), transparent 60%) inset; }
+      input:hover, textarea:hover, select:hover { border-color: color-mix(in oklab, var(--accent), #000 35%); background: color-mix(in oklab, var(--field-bg), #000 4%); }
+      input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent), transparent 70%); background: color-mix(in oklab, var(--field-bg), #000 8%); }
+      /* Ensure dropdown text and menu have strong contrast */
+      select { color: var(--field-fg); background-color: var(--field-bg); }
+      select option { color: #111; background: #fff; }
+      @media (prefers-color-scheme: dark) { select option { color: #fff; background: #222; } }
+      /* Row/list hover without implying click */
+      li:hover { border-color: #0003; background: #fff4; }
       ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
       li { border: 1px solid #0002; border-radius: 6px; padding: 8px; background: #fff3; min-width: 0; }
       .muted { opacity: .7; }
