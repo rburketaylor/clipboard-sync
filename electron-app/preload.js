@@ -8,6 +8,7 @@ async function http(path, options = {}) {
     ...options,
   });
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  if (res.status === 204) return undefined;
   return res.json();
 }
 
@@ -16,7 +17,7 @@ contextBridge.exposeInMainWorld('api', {
   getClips: async (limit = 10) => http(`/clips?limit=${encodeURIComponent(limit)}`),
   createClip: async ({ type, content, title }) =>
     http('/clip', { method: 'POST', body: JSON.stringify({ type, content, title }) }),
+  deleteClip: async (id) => http(`/clip/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   readClipboardText: () => clipboard.readText(),
   writeClipboardText: (text) => clipboard.writeText(text ?? ''),
 });
-

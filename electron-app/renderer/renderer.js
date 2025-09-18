@@ -30,11 +30,23 @@ async function loadClips() {
           </div>
           <div class="actions">
             <button class="copy">Copy</button>
+            <button class="delete" aria-label="Delete clip">Delete</button>
           </div>
         </div>`;
       li.querySelector('.copy').addEventListener('click', () => {
         api.writeClipboardText(c.content);
         setStatus('Copied to clipboard');
+      });
+      li.querySelector('.delete').addEventListener('click', async () => {
+        try {
+          setStatus('Deleting…');
+          await api.deleteClip(c.id);
+          await loadClips();
+          setStatus('Clip removed');
+        } catch (e) {
+          console.error(e);
+          setStatus(`Error deleting clip: ${e.message}`);
+        }
       });
       clipsEl.appendChild(li);
     }

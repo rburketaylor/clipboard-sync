@@ -62,6 +62,21 @@
       li { border: 1px solid #0002; border-radius: 6px; padding: 8px; background: #fff3; min-width: 0; }
       .muted { opacity: .7; }
       .actions { display: flex; gap: 8px; }
+      .actions .delete {
+        background: #d93025;
+        border-color: color-mix(in oklab, #d93025, #000 20%);
+        color: #fff;
+      }
+      .actions .delete:hover,
+      .actions .delete:focus-visible {
+        background: color-mix(in oklab, #d93025, #000 12%);
+        border-color: color-mix(in oklab, #d93025, #000 30%);
+        box-shadow: 0 1px 2px #0003, 0 0 0 2px color-mix(in oklab, #d93025, transparent 70%);
+      }
+      .actions .delete:active {
+        transform: translateY(1px);
+        box-shadow: 0 0 0 2px color-mix(in oklab, #d93025, transparent 55%) inset;
+      }
       .badge { padding: 2px 6px; border-radius: 999px; border: 1px solid #0003; font-size: 12px; }
       footer { padding: 8px 16px; border-top: 1px solid #0002; font-size: 12px; display: flex; justify-content: space-between; max-width: 1100px; margin: 0 auto; }
       code#backend-url { display: inline-block; max-width: 40vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
