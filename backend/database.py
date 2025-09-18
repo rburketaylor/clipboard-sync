@@ -1,5 +1,6 @@
 """Database connection management and session handling for clipboard sync application."""
 import os
+from typing import Generator
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
@@ -32,7 +33,7 @@ def create_tables():
     Base.metadata.create_all(bind=engine)
 
 
-def get_db() -> Session:
+def get_db() -> Generator[Session, None, None]:
     """
     Dependency function to get database session.
     
