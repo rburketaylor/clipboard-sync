@@ -6,7 +6,7 @@ Clipboard Sync is a small cross‑stack system that lets you capture text select
 
 Four components work together:
 
-- **Chrome Extension** (Vite + Vue 3, MV3): Captures selected text and active tab URL/title and sends them to the backend (HTTP). Native messaging and WebSocket transports exist behind a feature flag for future use.
+- **Chrome Extension** (Vite + Vue 3, MV3): Captures selected text and active tab URL/title and sends them to the backend through Native Messaging.
 - **Electron Desktop App** (Electron 38): Shows recent clips and lets you create new ones; talks to the backend via `BACKEND_URL`.
 - **Python Backend API** (FastAPI): Validates and persists clips; provides `/health`, `/clip`, and `/clips` endpoints.
 - **PostgreSQL**: Storage for clipboard entries.
@@ -16,10 +16,9 @@ Four components work together:
 ```
 clipboard-sync/
 ├── chrome-extension/       # Chrome extension (Vite + Vue 3, MV3)
-├── electron-app/           # Electron desktop app (tray + renderer)
+├── electron-app/           # Electron desktop app
 ├── backend/                # FastAPI backend + SQLAlchemy models
-├── scripts/                # Utility scripts (e.g., create_gh_issues.sh)
-├── issues/                 # Tracked tasks for the extension plan
+├── documents/              # Planning, design, requirement, and roadmap documents
 ├── docker-compose.yml      # Dev Compose (backend + db)
 ├── docker-compose.prod.yml # Production overrides
 └── README.md               # This file
@@ -29,10 +28,10 @@ clipboard-sync/
 
 ### Prerequisites
 
-- Node.js 20+
-- Python 3.11+ (only if running backend locally; Docker recommended)
+- Node.js 24+
+- Python 3.12+ (only if running backend locally; Docker recommended)
 - Docker + Docker Compose
-- Chrome browser
+- Chrome browser (Special cases if run under flatpak on Unix below)
 
 ### 1) Backend + DB (Docker)
 
@@ -106,63 +105,6 @@ Configure via Options:
   - Returns: `{ id, type, content, title, created_at }` (201)
 - `GET /clips?limit=10` → latest clips (limit 1..100)
 
-## Testing
-
-```bash
-# Backend
-cd backend
-python -m venv .venv && source .venv/bin/activate   # if not using Docker
-python -m pytest
-
-# Chrome Extension
-cd chrome-extension
-npm test
-
-# Electron App (placeholder)
-cd electron-app
-# (no tests yet)
-```
-
-## Creating GitHub Issues (Chrome Extension Plan)
-
-This repo includes a helper to create all tracked issues for the Chrome Extension plan in one go.
-
-- Script: `scripts/create_gh_issues.sh`
-- Source of truth: `issues/extension_issues.json`
-
-Prerequisites
-- `jq`, `curl`, and `git` installed
-- A GitHub token with permission to create issues in this repo
-  - Classic: `repo` scope
-  - Fine‑grained: Issues: Read/Write for this repository
-
-Usage
-```bash
-# 1) Provide a token (do not commit tokens)
-export GITHUB_TOKEN=ghp_your_token_here
-
-# 2) Optional: override target repo if your local git remote differs
-export REPO=rburketaylor/clipboard-sync
-
-# 3) Preview (no changes to GitHub)
-DRY_RUN=true ./scripts/create_gh_issues.sh
-
-# 4) Create labels and issues
-./scripts/create_gh_issues.sh
-```
-
-Notes
-- The script is idempotent for labels but does not deduplicate already‑created issues. Use `DRY_RUN=true` first.
-- It auto‑detects `owner/repo` from `origin` if `REPO` is not set.
-- It creates labels: `area:extension`, `type:task`, `priority:normal`, and `M1`–`M6`.
-
-Quick Verify
-```bash
-curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-  "https://api.github.com/repos/${REPO:-$(git config --get remote.origin.url | sed -n 's#.*github.com[:/]\(.*\)\.git#\1#p')}/issues?labels=area:extension" \
-  | jq '.[].title'
-```
-
 ## Docker Services
 
 Dev Compose orchestrates:
@@ -212,20 +154,3 @@ For production:
 | `POSTGRES_PASSWORD` | Database password | `clipboardpass_change_me_in_production` |
 | `DATABASE_URL` | Full database connection string | Auto-generated from above |
 | `TEST_DATABASE_URL` | Test database connection string | Auto-generated for testing |
-
-## CI
-
-GitHub Actions workflow builds and tests the Chrome extension and uploads the built `dist/` as an artifact (`.github/workflows/extension_ci.yml`).
-
-## Recent Changes (highlights)
-
-- 2025-09-16: Electron desktop app added; tray UI and clipboard helpers; `BACKEND_URL` support.
-- 2025-09-16: Extension: reliable selection + tab meta capture; URL send guarded to http(s); MV3 permissions and CSP refined.
-- 2025-09-16: Backend: healthcheck script integrated; dependencies bumped; URL validation via `urlparse` (http/https only).
-- 2025-09-16: Docker: renamed Postgres volume to `postgres_data_v2`; Compose waits on healthy DB.
-- 2025-09-15: Extension: WS and Native transports scaffolded; Options page with Test Connection; CI workflow for build/test/artifact.
-- 2025-09-15: Backend: initial FastAPI app with `/health`, `/clip`, `/clips`; dev CORS enabled; tables created on startup.
-
-## License
-
-MIT
