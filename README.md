@@ -84,7 +84,7 @@ Load in Chrome:
 - Load unpacked → select `chrome-extension/dist`
 
 Native messaging host (optional transport):
-- From `electron-app/`, run `npm run install-native-host -- --extension-id <your-extension-id>`. You can pass multiple IDs or rely on `EXTENSION_ID` env when packaging.
+- From `electron-app/`, run `npm run install-native-host --extension-id <your-extension-id>`. You can pass multiple IDs or rely on `EXTENSION_ID` env when packaging.
 - Use `--browser chrome-flatpak` when the browser is the Flatpak build (`com.google.Chrome`). The script copies `native-host.js`, writes the manifest, and applies `flatpak override --user --talk-name=org.freedesktop.Flatpak com.google.Chrome` so the sandbox can launch Node. If the override step fails (e.g., `flatpak` CLI missing), rerun that command manually and restart Chrome afterwards.
 - Non-Flatpak Chrome/Chromium installs do not need the override, but you still must rerun the installer whenever the host script or extension ID changes.
 
