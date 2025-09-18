@@ -38,7 +38,7 @@ clipboard-sync/
 1. Copy and edit environment variables:
    ```bash
    cp .env.example .env
-   # IMPORTANT: set a strong POSTGRES_PASSWORD and update DATABASE_URL accordingly
+   # IMPORTANT: set strong credentials (POSTGRES_PASSWORD, TEST_POSTGRES_PASSWORD, etc.)
    ```
 2. Start services:
    ```bash
@@ -149,8 +149,17 @@ For production:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `POSTGRES_DB` | Database name | `clipboarddb` |
-| `POSTGRES_USER` | Database user | `clipboarduser` |
-| `POSTGRES_PASSWORD` | Database password | `clipboardpass_change_me_in_production` |
-| `DATABASE_URL` | Full database connection string | Auto-generated from above |
-| `TEST_DATABASE_URL` | Test database connection string | Auto-generated for testing |
+| `POSTGRES_HOST` | Database host for app runtime | `db` (Docker) |
+| `POSTGRES_PORT` | Database port | `5432` |
+| `POSTGRES_DB` | Application database name | `clipboarddb` |
+| `POSTGRES_USER` | Application database user | `clipboarduser` |
+| `POSTGRES_PASSWORD` | Application database password | `clipboardpass_change_me_in_production` |
+| `POSTGRES_ADMIN_DB` | Admin database used for migrations/setup | `postgres` |
+| `APP_HOST` | Backend bind host (healthcheck + uvicorn) | `0.0.0.0` |
+| `APP_PORT` | Backend port | `8000` |
+| `HEALTHCHECK_PATH` | Healthcheck endpoint path | `/health` |
+| `TEST_DATABASE_NAME` | Test database name | `clipboard_sync_test` |
+| `TEST_POSTGRES_HOST` | Host used by tests | `localhost` |
+| `TEST_POSTGRES_PORT` | Port used by tests | `5432` |
+| `TEST_POSTGRES_USER` | Database user for tests | `clipboarduser` |
+| `TEST_POSTGRES_PASSWORD` | Database password for tests | `clipboardpass_change_me_in_production` |
