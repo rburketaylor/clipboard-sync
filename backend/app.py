@@ -1,6 +1,6 @@
 from typing import List, Optional, Literal
 
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Response, Path
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from urllib.parse import urlparse
@@ -92,3 +92,19 @@ def list_clips(limit: int = Query(10, ge=1, le=100), db: Session = Depends(get_d
         )
         for c in rows
     ]
+
+
+@app.delete("/clip/{clip_id}", status_code=204)
+def delete_clip(clip_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    if not clip:
+        raise HTTPException(status_code=404, detail=f"Clip with id {clip_id} not found")
+
+    try:
+        db.delete(clip)
+        db.commit()
+    except Exception as exc:  # pragma: no cover - defensive guard
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to delete clip") from exc
+
+    return Response(status_code=204)
