@@ -1,7 +1,5 @@
 import { getConfig } from '../shared/storage';
-import { sendViaHttp, pingViaHttp } from './transports/http';
 import { sendViaNative, pingViaNative } from './transports/native';
-import { sendViaWs, pingViaWs } from './transports/ws';
 
 type ClipPayload = { content?: string; type: 'text' | 'url'; title?: string };
 
@@ -86,13 +84,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         let ok = false; let error: string | undefined;
 
         try {
-          if (cfg.mode === 'native') {
-            await sendViaNative(payload);
-          } else if (cfg.mode === 'ws') {
-            await sendViaWs(cfg.wsUrl || 'ws://127.0.0.1:17373', payload);
-          } else {
-            await sendViaHttp(cfg.backendBaseUrl || 'http://localhost:8000', payload);
-          }
+          await sendViaNative(payload, { backendBaseUrl: cfg.backendBaseUrl });
           ok = true;
         } catch (err: any) {
           ok = false; error = err?.message || String(err);
@@ -106,11 +98,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     }
 
     if (msg?.kind === 'testConnection') {
-      const cfg = await getConfig();
-      let ok = false;
-      if (cfg.mode === 'native') ok = await pingViaNative();
-      else if (cfg.mode === 'ws') ok = await pingViaWs(cfg.wsUrl || 'ws://127.0.0.1:17373');
-      else ok = await pingViaHttp(cfg.backendBaseUrl || 'http://localhost:8000');
+      const ok = await pingViaNative();
       sendResponse({ ok });
       return;
     }
