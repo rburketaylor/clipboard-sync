@@ -3,12 +3,10 @@ const isNativeHostProcess = process.argv.includes('--native-host');
 if (isNativeHostProcess) {
   require('./native-host');
 } else {
-  const { app, BrowserWindow, Menu, Tray, nativeImage } = require('electron');
+  const { app, BrowserWindow } = require('electron');
   const path = require('path');
 
   let mainWindow;
-  let tray;
-
   function createWindow() {
     mainWindow = new BrowserWindow({
       width: 900,
@@ -33,27 +31,8 @@ if (isNativeHostProcess) {
     });
   }
 
-  function createTray() {
-    const iconPath = path.join(__dirname, 'renderer', 'icon.png');
-    const icon = nativeImage.createFromPath(iconPath);
-    tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
-
-    const contextMenu = Menu.buildFromTemplate([
-      { label: 'Show', click: () => mainWindow?.show() },
-      { type: 'separator' },
-      { role: 'quit' },
-    ]);
-    tray.setToolTip('Clipboard Sync');
-    tray.setContextMenu(contextMenu);
-    tray.on('click', () => {
-      if (mainWindow?.isVisible()) mainWindow.focus();
-      else mainWindow?.show();
-    });
-  }
-
   app.whenReady().then(() => {
     createWindow();
-    createTray();
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
