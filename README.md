@@ -7,8 +7,8 @@ Clipboard Sync is a small cross‑stack system that lets you capture text select
 Four components work together:
 
 - **Chrome Extension** (Vite + Vue 3, MV3): Captures selected text and active tab URL/title and sends them to the backend through Native Messaging.
-- **Electron Desktop App** (Electron 38): Shows recent clips and lets you create new ones; talks to the backend via `BACKEND_URL`.
-- **Python Backend API** (FastAPI): Validates and persists clips; provides `/health`, `/clip`, and `/clips` endpoints.
+- **Electron Desktop App** (Electron 38): Shows recent clips and lets you create, copy, and delete entries; talks to the backend via `BACKEND_URL`.
+- **Python Backend API** (FastAPI): Validates and persists clips; provides `/health`, `/clip`, `/clips`, and `DELETE /clip/{id}` endpoints.
 - **PostgreSQL**: Storage for clipboard entries.
 
 ## Project Structure
@@ -104,6 +104,7 @@ Configure via Options:
   - Constraints: `content` 1..10,000 chars; `title` ≤ 500; when `type=url`, only `http(s)` with a host is accepted.
   - Returns: `{ id, type, content, title, created_at }` (201)
 - `GET /clips?limit=10` → latest clips (limit 1..100)
+- `DELETE /clip/{id}` → remove a clip (204 on success, 404 if the clip does not exist)
 
 ## Docker Services
 
@@ -119,7 +120,7 @@ Production overrides (`docker-compose.prod.yml`):
 
 ## Electron App
 
-The desktop app shows recent clips and lets you create/copy entries. It talks to the backend at `BACKEND_URL` (defaults to `http://localhost:8000`).
+The desktop app shows recent clips and lets you create/copy/delete entries. It talks to the backend at `BACKEND_URL` (defaults to `http://localhost:8000`) for all operations, including the new DELETE support—no additional environment variables are required.
 
 ## Security & Config
 
