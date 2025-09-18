@@ -1,24 +1,23 @@
-"""
-Database connection management and session handling for clipboard sync application.
-"""
+"""Database connection management and session handling for clipboard sync application."""
 import os
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
 from models import Base
 
+from config import build_database_url
+
+
 # Database configuration
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql://clipboarduser:clipboardpass_change_me_in_production@localhost:5432/clipboarddb"
-)
+DATABASE_URL = build_database_url()
+
 
 # Create engine with connection pooling
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,  # Verify connections before use
-    pool_recycle=300,    # Recycle connections every 5 minutes
-    echo=os.getenv("SQL_DEBUG", "false").lower() == "true"  # Enable SQL logging in debug mode
+    pool_recycle=300,  # Recycle connections every 5 minutes
+    echo=os.getenv("SQL_DEBUG", "false").lower() == "true",  # Enable SQL logging in debug mode
 )
 
 # Create session factory

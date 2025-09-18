@@ -8,6 +8,8 @@ from datetime import datetime
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from config import build_test_database_url
+
 try:
     import pytest
     from sqlalchemy import create_engine
@@ -21,10 +23,7 @@ except ImportError as e:
     PYTEST_AVAILABLE = False
 
 # Test database configuration (PostgreSQL for testing)
-TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL", 
-    "postgresql://clipboarduser:clipboardpass_change_me_in_production@localhost:5432/clipboard_sync_test"
-)
+TEST_DATABASE_URL = build_test_database_url()
 
 
 @pytest.fixture

@@ -3,22 +3,29 @@
 Setup script for creating test database.
 Run this before running tests to ensure the test database exists.
 """
-import os
 import sys
 from sqlalchemy import create_engine, text
 
+from config import build_database_url, build_test_database_url, get_env
+
 # Test database configuration
-TEST_DB_NAME = "clipboard_sync_test"
-POSTGRES_USER = os.getenv("POSTGRES_USER", "clipboarduser")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "clipboardpass_change_me_in_production")
-POSTGRES_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432"
-TEST_DATABASE_URL = f"{POSTGRES_URL}/{TEST_DB_NAME}"
+DEFAULT_TEST_DB_NAME = "clipboard_sync_test"
+DEFAULT_ADMIN_DB = "postgres"
+
+TEST_DATABASE_URL = build_test_database_url()
+test_db_name = get_env("TEST_DATABASE_NAME", default=DEFAULT_TEST_DB_NAME) or DEFAULT_TEST_DB_NAME
+admin_database = get_env("POSTGRES_ADMIN_DB", default=DEFAULT_ADMIN_DB) or DEFAULT_ADMIN_DB
+
+ADMIN_DATABASE_URL = build_database_url(
+    db_env="POSTGRES_ADMIN_DB",
+    db_default=DEFAULT_ADMIN_DB,
+)
 
 def create_test_database():
     """Create the test database if it doesn't exist."""
     try:
-        # Connect to PostgreSQL server (not specific database)
-        engine = create_engine(f"{POSTGRES_URL}/postgres")
+        # Connect to PostgreSQL server (admin database)
+        engine = create_engine(ADMIN_DATABASE_URL)
         
         with engine.connect() as conn:
             # Set autocommit mode for database creation
@@ -27,14 +34,14 @@ def create_test_database():
             # Check if database exists
             result = conn.execute(text(
                 "SELECT 1 FROM pg_database WHERE datname = :db_name"
-            ), {"db_name": TEST_DB_NAME})
+            ), {"db_name": test_db_name})
             
             if not result.fetchone():
                 # Create database
-                conn.execute(text(f"CREATE DATABASE {TEST_DB_NAME}"))
-                print(f"Created test database: {TEST_DB_NAME}")
+                conn.execute(text(f"CREATE DATABASE {test_db_name}"))
+                print(f"Created test database: {test_db_name}")
             else:
-                print(f"Test database already exists: {TEST_DB_NAME}")
+                print(f"Test database already exists: {test_db_name}")
                 
     except Exception as e:
         print(f"Error creating test database: {e}")

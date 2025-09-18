@@ -10,7 +10,15 @@ services:
     # Use production command (no reload)
     command: uvicorn app:app --host 0.0.0.0 --port 8000
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_ADMIN_DB=${POSTGRES_ADMIN_DB}
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      - HEALTHCHECK_PATH=/health
       - PYTHONPATH=/app
       # Add production-specific environment variables
       - ENVIRONMENT=production
