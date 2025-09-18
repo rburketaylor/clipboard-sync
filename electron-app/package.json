@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "native-host": "electron . --native-host",
+    "install-native-host": "node scripts/install-native-host.js"
   },
   "keywords": ["clipboard", "sync", "electron", "desktop"],
   "author": "",
@@ -31,6 +33,8 @@
     "files": [
       "main.js",
       "preload.js",
+      "native-host.js",
+      "scripts/install-native-host.js",
       "renderer/**/*",
       "node_modules/**/*"
     ]
