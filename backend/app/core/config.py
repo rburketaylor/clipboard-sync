@@ -1,5 +1,8 @@
-"""Shared configuration helpers for backend services."""
+"""Application-level configuration helpers and settings access."""
+from __future__ import annotations
+
 import os
+from functools import lru_cache
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -16,6 +19,13 @@ def get_env(name: str, *, required: bool = False, default: Optional[str] = None)
             f"Environment variable '{name}' is required but was not provided."
         )
     return value
+
+
+def ensure_leading_slash(path: str) -> str:
+    """Ensure a path begins with a forward slash."""
+    if not path.startswith("/"):
+        return f"/{path}"
+    return path
 
 
 def _compose_postgres_url(*, user: str, password: str, host: str, port: str, database: str) -> str:
@@ -61,22 +71,10 @@ def build_database_url(
 
 def build_test_database_url() -> str:
     """Create a PostgreSQL URL for the test database, allowing overrides."""
-    test_user = get_env("TEST_POSTGRES_USER")
-    if not test_user:
-        test_user = get_env("POSTGRES_USER", required=True)
-
-    test_password = get_env("TEST_POSTGRES_PASSWORD")
-    if not test_password:
-        test_password = get_env("POSTGRES_PASSWORD", required=True)
-
-    test_host = get_env("TEST_POSTGRES_HOST")
-    if not test_host:
-        test_host = get_env("POSTGRES_HOST", default="localhost") or "localhost"
-
-    test_port = get_env("TEST_POSTGRES_PORT")
-    if not test_port:
-        test_port = get_env("POSTGRES_PORT", default="5432") or "5432"
-
+    test_user = get_env("TEST_POSTGRES_USER") or get_env("POSTGRES_USER", required=True)
+    test_password = get_env("TEST_POSTGRES_PASSWORD") or get_env("POSTGRES_PASSWORD", required=True)
+    test_host = get_env("TEST_POSTGRES_HOST") or get_env("POSTGRES_HOST", default="localhost") or "localhost"
+    test_port = get_env("TEST_POSTGRES_PORT") or get_env("POSTGRES_PORT", default="5432") or "5432"
     test_db = get_env("TEST_DATABASE_NAME", default="clipboard_sync_test") or "clipboard_sync_test"
 
     return _compose_postgres_url(
@@ -88,8 +86,33 @@ def build_test_database_url() -> str:
     )
 
 
-def ensure_leading_slash(path: str) -> str:
-    """Ensure a path begins with a forward slash."""
-    if not path.startswith("/"):
-        return f"/{path}"
-    return path
+class Settings:
+    """Runtime configuration snapshot for the backend application."""
+
+    def __init__(self) -> None:
+        self.environment = get_env("ENVIRONMENT", default="development")
+        self.log_level = get_env("LOG_LEVEL", default="debug" if self.is_development else "info")
+        self.app_host = get_env("APP_HOST", default="0.0.0.0")
+        self.app_port = get_env("APP_PORT", default="8000")
+        self.cors_allow_all = self.is_development
+
+    @property
+    def is_development(self) -> bool:
+        return self.environment.lower() != "production"
+
+
+@lru_cache(maxsize=1)
+def load_settings() -> Settings:
+    """Return a cached `Settings` instance."""
+
+    return Settings()
+
+
+__all__ = [
+    "Settings",
+    "build_database_url",
+    "build_test_database_url",
+    "ensure_leading_slash",
+    "get_env",
+    "load_settings",
+]

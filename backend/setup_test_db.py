@@ -6,7 +6,7 @@ Run this before running tests to ensure the test database exists.
 import sys
 from sqlalchemy import create_engine, text
 
-from config import build_database_url, build_test_database_url, get_env
+from app.core.config import build_database_url, build_test_database_url, get_env
 
 # Test database configuration
 DEFAULT_TEST_DB_NAME = "clipboard_sync_test"

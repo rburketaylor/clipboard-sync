@@ -1,7 +1,7 @@
 import sys
 import urllib.request
 
-from config import ensure_leading_slash, get_env
+from app.core.config import ensure_leading_slash, get_env
 
 
 default_host = get_env("APP_HOST", default="localhost") or "localhost"
