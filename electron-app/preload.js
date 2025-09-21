@@ -12,12 +12,19 @@ async function http(path, options = {}) {
   return res.json();
 }
 
-contextBridge.exposeInMainWorld('api', {
-  backendUrl: BACKEND_URL,
-  getClips: async (limit = 10) => http(`/clips?limit=${encodeURIComponent(limit)}`),
-  createClip: async ({ type, content, title }) =>
-    http('/clip', { method: 'POST', body: JSON.stringify({ type, content, title }) }),
-  deleteClip: async (id) => http(`/clip/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  readClipboardText: () => clipboard.readText(),
-  writeClipboardText: (text) => clipboard.writeText(text ?? ''),
-});
+if (contextBridge?.exposeInMainWorld) {
+  contextBridge.exposeInMainWorld('api', {
+    backendUrl: BACKEND_URL,
+    getClips: async (limit = 10) => http(`/clips?limit=${encodeURIComponent(limit)}`),
+    createClip: async ({ type, content, title }) =>
+      http('/clip', { method: 'POST', body: JSON.stringify({ type, content, title }) }),
+    deleteClip: async (id) => http(`/clip/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    readClipboardText: () => clipboard.readText(),
+    writeClipboardText: (text) => clipboard.writeText(text ?? ''),
+  });
+}
+
+module.exports = {
+  BACKEND_URL,
+  http,
+};

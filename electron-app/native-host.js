@@ -114,10 +114,14 @@ function processInputBuffer() {
   }
 }
 
+function appendChunk(chunk) {
+  inputBuffer = Buffer.concat([inputBuffer, chunk]);
+}
+
 function start() {
   logDebug('Native host starting');
   process.stdin.on('data', chunk => {
-    inputBuffer = Buffer.concat([inputBuffer, chunk]);
+    appendChunk(chunk);
     processInputBuffer();
   });
 
@@ -135,4 +139,22 @@ function start() {
   process.on('SIGTERM', () => process.exit(0));
 }
 
-start();
+function resetStateForTests() {
+  inputBuffer = Buffer.alloc(0);
+}
+
+if (require.main === module) {
+  start();
+}
+
+module.exports = {
+  DEFAULT_TIMEOUT_MS,
+  BACKEND_URL,
+  appendChunk,
+  handleMessage,
+  postClip,
+  processInputBuffer,
+  resetStateForTests,
+  start,
+  writeNativeMessage
+};

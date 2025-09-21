@@ -8,7 +8,9 @@
     "dev": "electron . --dev",
     "build": "electron-builder",
     "native-host": "electron . --native-host",
-    "install-native-host": "node scripts/install-native-host.js"
+    "install-native-host": "node scripts/install-native-host.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "clipboard",
@@ -19,8 +21,11 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
     "electron": "^38.1.2",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jsdom": "^27.0.0",
+    "vitest": "^3.2.4"
   },
   "build": {
     "appId": "com.clipboardsync.electron",
