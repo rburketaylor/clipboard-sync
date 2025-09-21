@@ -89,3 +89,69 @@ def test_deleted_clip_not_listed(test_client, db_session):
     assert list_response.status_code == 200
     ids = [item["id"] for item in list_response.json()]
     assert entry.id not in ids
+
+
+def test_create_clip_accepts_valid_text_payload(test_client, db_session):
+    payload = {"type": "text", "content": "Some captured text", "title": "Snippet"}
+
+    response = test_client.post("/clip", json=payload)
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["type"] == "text"
+    assert body["content"] == payload["content"]
+    assert body["title"] == "Snippet"
+
+    db_session.expire_all()
+    persisted = db_session.query(ClipboardEntry).filter_by(id=body["id"]).first()
+    assert persisted is not None
+
+
+@pytest.mark.parametrize(
+    "payload,detail",
+    [
+        (
+            {"type": "url", "content": "notaurl", "title": "bad"},
+            "content must be a valid URL when type=url",
+        ),
+        (
+            {"type": "url", "content": "ftp://example.com"},
+            "content must be a valid URL when type=url",
+        ),
+    ],
+)
+def test_create_clip_rejects_invalid_url_payload(test_client, payload, detail):
+    response = test_client.post("/clip", json=payload)
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == detail
+
+
+def test_list_clips_returns_descending_order_and_respects_limit(test_client, db_session):
+    from datetime import datetime, timedelta
+
+    base = datetime.utcnow()
+    entries = []
+    for idx in range(5):
+        entry = ClipboardEntry(content=f"clip-{idx}", type="text", title=f"t{idx}")
+        entry.created_at = base + timedelta(seconds=idx)
+        entries.append(entry)
+    for entry in entries:
+        db_session.add(entry)
+        db_session.flush()
+    db_session.commit()
+
+    list_response = test_client.get("/clips", params={"limit": 3})
+    assert list_response.status_code == 200
+    body = list_response.json()
+    assert len(body) == 3
+
+    returned_ids = [item["id"] for item in body]
+    assert returned_ids == sorted(returned_ids, reverse=True)
+
+
+@pytest.mark.parametrize("limit", [0, 101])
+def test_list_clips_enforces_limit_bounds(test_client, limit):
+    response = test_client.get("/clips", params={"limit": limit})
+
+    assert response.status_code == 422
