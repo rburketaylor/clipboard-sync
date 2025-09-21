@@ -10,15 +10,17 @@
     "native-host": "electron . --native-host",
     "install-native-host": "node scripts/install-native-host.js"
   },
-  "keywords": ["clipboard", "sync", "electron", "desktop"],
+  "keywords": [
+    "clipboard",
+    "sync",
+    "electron",
+    "desktop"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^38.1.0",
+    "electron": "^38.1.2",
     "electron-builder": "^26.0.12"
-  },
-  "dependencies": {
-    
   },
   "build": {
     "appId": "com.clipboardsync.electron",
@@ -27,7 +29,9 @@
       "output": "dist"
     },
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Utility"
     },
     "files": [
