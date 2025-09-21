@@ -1,7 +1,7 @@
 import { createApp, ref, onMounted } from 'vue';
 import { getConfig, setConfig, defaultConfig } from '../shared/storage';
 
-const App = {
+export const OptionsApp = {
   setup() {
     const backendBaseUrl = ref('');
     const debug = ref(false);
@@ -53,5 +53,6 @@ const App = {
   `
 };
 
-createApp(App).mount('#app');
-
+if (typeof document !== 'undefined' && document.getElementById('app')) {
+  createApp(OptionsApp).mount('#app');
+}

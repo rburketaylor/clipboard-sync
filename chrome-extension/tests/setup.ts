@@ -7,7 +7,23 @@ const memoryStore: Record<string, any> = {};
 // @ts-ignore
 global.chrome = {
   runtime: {
-    sendMessage: (_msg: any) => Promise.resolve({ ok: true })
+    sendMessage: (_msg: any) => Promise.resolve({ ok: true }),
+    onMessage: {
+      addListener: (_cb: any) => {}
+    },
+    openOptionsPage: () => {},
+    connectNative: () => ({
+      onDisconnect: { addListener: () => {} },
+      onMessage: { addListener: () => {} },
+      postMessage: () => {}
+    }),
+    lastError: null
+  },
+  tabs: {
+    query: async () => [{ id: 1 }]
+  },
+  scripting: {
+    executeScript: async () => []
   },
   storage: {
     local: {
