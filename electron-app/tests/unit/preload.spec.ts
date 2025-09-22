@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('electron', () => ({
   contextBridge: { exposeInMainWorld: vi.fn() },
-  clipboard: { readText: vi.fn(), writeText: vi.fn() }
+  ipcRenderer: {
+    invoke: vi.fn(),
+    on: vi.fn(),
+    removeListener: vi.fn()
+  }
 }));
 
 describe('preload HTTP helper', () => {

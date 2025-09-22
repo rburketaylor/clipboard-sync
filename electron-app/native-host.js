@@ -11,6 +11,7 @@
  */
 
 const { URL } = require('url');
+const { normalizeClipPayload } = require('./shared/clip-payload');
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -71,10 +72,12 @@ async function handleMessage(message) {
         throw new Error('Missing payload for clip message');
       }
 
+      const normalizedPayload = normalizeClipPayload(payload);
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
       try {
-        await postClip(payload, backendBaseUrl, controller.signal);
+        await postClip(normalizedPayload, backendBaseUrl, controller.signal);
       } finally {
         clearTimeout(timeout);
       }

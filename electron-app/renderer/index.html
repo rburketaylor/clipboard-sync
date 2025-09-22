@@ -83,6 +83,8 @@
       .clip-grid { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 12px; }
       .content-wrap { overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
       @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+      .divider { border: none; border-bottom: 1px dashed #0002; margin: 16px 0; }
+      .clipboard-sync input[type="checkbox"] { width: 16px; height: 16px; }
     </style>
   </head>
   <body>
@@ -110,6 +112,20 @@
           <button id="from-clipboard">From Clipboard</button>
           <button id="create">Create</button>
         </div>
+        <hr class="divider" />
+        <section aria-labelledby="clipboard-sync-heading" class="clipboard-sync">
+          <h4 id="clipboard-sync-heading" class="muted" style="margin:0 0 8px; font-weight:600;">Clipboard Sync</h4>
+          <div class="row" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <button id="send-clipboard-now">Send Clipboard Now</button>
+              <label class="row" style="gap:6px; font-size:14px;">
+                <input id="auto-clipboard" type="checkbox" />
+                <span>Auto-send clipboard changes</span>
+              </label>
+            </div>
+          </div>
+          <p id="clipboard-status" class="muted" style="margin-top:8px; font-size:12px;">Clipboard idle</p>
+        </section>
       </section>
       <section class="card">
         <h3>Recent Clips</h3>

@@ -14,6 +14,9 @@ function buildDom() {
       <button id="refresh"></button>
       <button id="create"></button>
       <button id="from-clipboard"></button>
+      <button id="send-clipboard-now"></button>
+      <input id="auto-clipboard" type="checkbox" />
+      <div id="clipboard-status"></div>
     </div>
   `;
 }
@@ -35,8 +38,12 @@ describe('renderer UI', () => {
       ]),
       createClip: vi.fn(),
       deleteClip: vi.fn().mockResolvedValue(undefined),
-      writeClipboardText: vi.fn(),
-      readClipboardText: vi.fn().mockReturnValue('clip text')
+      writeClipboardText: vi.fn().mockResolvedValue(undefined),
+      readClipboardText: vi.fn().mockResolvedValue('clip text'),
+      readClipboardSnapshot: vi.fn().mockResolvedValue({ text: 'clip text', hash: 'hash' }),
+      startClipboardWatch: vi.fn().mockResolvedValue({ text: '', hash: '' }),
+      stopClipboardWatch: vi.fn().mockResolvedValue(undefined),
+      onClipboardChanged: vi.fn(() => () => void 0),
     };
     (window as any).api = api;
     await import('../../renderer/renderer.js');
@@ -67,6 +74,7 @@ describe('renderer UI', () => {
     await flush();
     const copyButton = getByText(document.body, 'Copy');
     fireEvent.click(copyButton);
+    await flush();
     expect(api.writeClipboardText).toHaveBeenCalledWith('hello');
   });
 

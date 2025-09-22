@@ -90,6 +90,10 @@ describe('native host end-to-end', () => {
 
     const response = await responsePromise;
     expect(response).toEqual({ kind: 'clipResult', ok: true, requestId: 42 });
-    expect(received).toContainEqual({ type: 'text', content: 'hi from test' });
+    expect(received).toContainEqual(expect.objectContaining({
+      type: 'text',
+      content: 'hi from test',
+      source: 'electron'
+    }));
   }, 10_000);
 });
