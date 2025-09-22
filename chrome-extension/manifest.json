@@ -17,8 +17,28 @@
     "storage",
     "scripting",
     "activeTab",
-    "nativeMessaging"
+    "nativeMessaging",
+    "clipboardRead",
+    "clipboardWrite",
+    "offscreen"
   ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/background/offscreen-clipboard.html"
+      ],
+      "matches": ["*://*/*"]
+    }
+  ],
+  "commands": {
+    "send-current-clipboard": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Send current clipboard contents"
+    }
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self'"
   }

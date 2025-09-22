@@ -8,10 +8,17 @@ vi.mock('../../src/shared/storage', () => ({
 
 const sendViaNative = vi.fn(async () => {});
 const pingViaNative = vi.fn(async () => true);
+const readClipboardFromOffscreen = vi.fn(async () => ({ text: 'clipboard text', mimeType: 'text/plain' }));
+const teardownOffscreenIfIdle = vi.fn(async () => {});
 
 vi.mock('../../src/background/transports/native', () => ({
   sendViaNative,
   pingViaNative
+}));
+
+vi.mock('../../src/background/offscreen-manager', () => ({
+  readClipboardFromOffscreen,
+  teardownOffscreenIfIdle
 }));
 
 async function loadBackground() {
@@ -32,12 +39,19 @@ describe('background message router', () => {
     listeners.length = 0;
     sendViaNative.mockClear();
     pingViaNative.mockClear();
+    readClipboardFromOffscreen.mockReset();
+    teardownOffscreenIfIdle.mockReset();
 
     (global as any).chrome.runtime.onMessage.addListener = vi.fn((cb: any) => {
       listeners.push(cb);
     });
 
     (global as any).chrome.tabs.query = vi.fn(async () => [{ id: 99 }]);
+    (global as any).chrome.commands = {
+      onCommand: {
+        addListener: vi.fn()
+      }
+    };
   });
 
   it('responds to popupOpened with selection and tab meta', async () => {
@@ -67,7 +81,7 @@ describe('background message router', () => {
     const response: any = await invokeListener(payload);
 
     expect(sendViaNative).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'text', content: 'hi' }),
+      expect.objectContaining({ type: 'text', content: 'hi', source: 'selection', mimeType: 'text/plain' }),
       expect.objectContaining({ backendBaseUrl: 'http://localhost:8000' })
     );
     expect(response).toEqual({ ok: true, error: undefined });
@@ -106,5 +120,32 @@ describe('background message router', () => {
     pingViaNative.mockResolvedValueOnce(false);
     const failResponse: any = await invokeListener({ kind: 'testConnection' });
     expect(failResponse).toEqual({ ok: false });
+  });
+
+  it('reads clipboard when requested', async () => {
+    (global as any).chrome.scripting.executeScript = vi.fn();
+    readClipboardFromOffscreen.mockResolvedValueOnce({ text: 'from clipboard', mimeType: 'text/plain' });
+    await loadBackground();
+
+    const response: any = await invokeListener({ kind: 'sendClip', source: 'clipboard' });
+
+    expect(readClipboardFromOffscreen).toHaveBeenCalled();
+    expect(sendViaNative).toHaveBeenCalledWith(
+      expect.objectContaining({ content: 'from clipboard', source: 'clipboard' }),
+      expect.any(Object)
+    );
+    expect(teardownOffscreenIfIdle).toHaveBeenCalled();
+    expect(response).toEqual({ ok: true, error: undefined });
+  });
+
+  it('returns error when clipboard read fails', async () => {
+    (global as any).chrome.scripting.executeScript = vi.fn();
+    readClipboardFromOffscreen.mockRejectedValueOnce(new Error('no access'));
+    await loadBackground();
+
+    const response: any = await invokeListener({ kind: 'sendClip', source: 'clipboard' });
+
+    expect(response.ok).toBe(false);
+    expect(response.error).toBe('no access');
   });
 });

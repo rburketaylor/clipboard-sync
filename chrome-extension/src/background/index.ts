@@ -1,7 +1,7 @@
 import { getConfig } from '../shared/storage';
+import { ClipPayload, ClipSource, DEFAULT_MIME_TYPE } from '../shared/types';
+import { readClipboardFromOffscreen, teardownOffscreenIfIdle } from './offscreen-manager';
 import { sendViaNative, pingViaNative } from './transports/native';
-
-type ClipPayload = { content?: string; type: 'text' | 'url'; title?: string };
 
 // Use lastFocusedWindow for reliability from a service worker context
 async function getActiveTab() {
@@ -61,6 +61,48 @@ async function readTabMetaFromActiveTab(): Promise<{ href: string; title: string
   return (result?.result as any) ?? null;
 }
 
+async function buildPayloadFromMessage(msg: any): Promise<ClipPayload> {
+  const source = (msg?.source as ClipSource | undefined) ?? 'selection';
+
+  if (source === 'clipboard') {
+    const { text, mimeType } = await readClipboardFromOffscreen();
+    return {
+      type: 'text',
+      content: text,
+      mimeType: mimeType || DEFAULT_MIME_TYPE,
+      source,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  const payload = msg?.payload as ClipPayload | undefined;
+  if (!payload?.content || !payload?.type) {
+    throw new Error('Invalid payload');
+  }
+
+  return {
+    ...payload,
+    source,
+    createdAt: new Date().toISOString(),
+    mimeType: payload.mimeType || (payload.type === 'url' ? 'text/uri-list' : DEFAULT_MIME_TYPE),
+  };
+}
+
+async function handleSendClip(msg: any) {
+  const cfg = await getConfig();
+  const payload = await buildPayloadFromMessage(msg);
+
+  try {
+    await sendViaNative(payload, { backendBaseUrl: cfg.backendBaseUrl });
+    return { ok: true };
+  } finally {
+    if (payload.source === 'clipboard') {
+      // Allow Chrome to reclaim the offscreen document when idle.
+      void teardownOffscreenIfIdle();
+    }
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     if (msg?.kind === 'popupOpened') {
@@ -75,24 +117,12 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     }
 
     if (msg?.kind === 'sendClip') {
-      const payload = (msg?.payload || {}) as ClipPayload;
       try {
-        // Basic client-side validation; detailed rules will live in validators
-        if (!payload?.content || !payload?.type) throw new Error('Invalid payload');
-
-        const cfg = await getConfig();
-        let ok = false; let error: string | undefined;
-
-        try {
-          await sendViaNative(payload, { backendBaseUrl: cfg.backendBaseUrl });
-          ok = true;
-        } catch (err: any) {
-          ok = false; error = err?.message || String(err);
-        }
-
-        sendResponse({ ok, error });
+        const result = await handleSendClip(msg);
+        sendResponse(result);
       } catch (e: any) {
-        sendResponse({ ok: false, error: e?.message || String(e) });
+        const error = e instanceof Error ? e.message : String(e);
+        sendResponse({ ok: false, error });
       }
       return;
     }
@@ -105,4 +135,13 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   })();
   // Return true to keep the message channel open for async response
   return true;
+});
+
+chrome.commands?.onCommand.addListener(async command => {
+  if (command !== 'send-current-clipboard') return;
+  try {
+    await handleSendClip({ source: 'clipboard' });
+  } catch (err) {
+    console.error('Clipboard command failed', err);
+  }
 });

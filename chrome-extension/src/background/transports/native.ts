@@ -68,9 +68,10 @@ export async function pingViaNative(): Promise<boolean> {
   }
 }
 
-export async function sendViaNative(payload: { content?: string; type: 'text' | 'url'; title?: string }, options?: { backendBaseUrl?: string }) {
+export async function sendViaNative(payload: ClipPayload, options?: { backendBaseUrl?: string }) {
   const response = await sendNativeRequest({ kind: 'clip', payload, backendBaseUrl: options?.backendBaseUrl });
   if (!response?.ok) {
     throw new Error(response?.error || 'Native messaging host reported an error');
   }
 }
+import type { ClipPayload } from '../../shared/types';
