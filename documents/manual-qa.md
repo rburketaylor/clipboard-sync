@@ -17,4 +17,13 @@ Use this checklist whenever the clip deletion feature changes.
 4. Attempt to delete the same clip again (using the status history or manual API call) and confirm the status shows an error.
 5. Verify the Copy button still works for remaining clips.
 
+## Clipboard Sync
+
+1. Install/refresh the Chrome extension and grant clipboard access when prompted (“Enable Clipboard”).
+2. Copy text on any HTTPS page and use the popup “Send Clipboard” button – verify a new text clip appears in the backend/Electron list.
+3. Trigger the keyboard shortcut (`Ctrl+Shift+Y` on Windows/Linux, `⌘⇧Y` on macOS) and confirm the clipboard entry syncs without opening the popup.
+4. In the Electron app, enable “Auto-send clipboard changes”, copy new text, and check that status updates to “Clipboard synced automatically” with a new entry in “Recent Clips”.
+5. Toggle auto-sync off and ensure the clipboard status returns to “Clipboard idle” and no further automatic syncs occur.
+6. Attempt to send an empty clipboard (clear the clipboard first) – both extension and Electron UI should surface a user-friendly message instead of syncing.
+
 Document the backend URL used and any deviations (proxy, TLS, etc.) in the PR description.
