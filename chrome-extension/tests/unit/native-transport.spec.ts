@@ -41,7 +41,9 @@ describe('native transport', () => {
     const { sendViaNative } = await import('../../src/background/transports/native');
 
     const promise = sendViaNative({ type: 'text', content: 'hello' });
-    expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({ kind: 'clip', requestId: 1 }));
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'clip', requestId: 1 })
+    );
 
     messageListener?.({ requestId: 1, ok: true });
 

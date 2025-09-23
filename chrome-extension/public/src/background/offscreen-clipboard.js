@@ -1,7 +1,7 @@
 const DEFAULT_MIME_TYPE = 'text/plain';
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function ensureFocus() {

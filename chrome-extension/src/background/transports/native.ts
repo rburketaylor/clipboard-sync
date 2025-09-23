@@ -1,10 +1,13 @@
 let port: chrome.runtime.Port | null = null;
 let nextRequestId = 1;
-const pending = new Map<number, {
-  resolve: (message: any) => void;
-  reject: (error: Error) => void;
-  timeout: ReturnType<typeof setTimeout>;
-}>();
+const pending = new Map<
+  number,
+  {
+    resolve: (message: any) => void;
+    reject: (error: Error) => void;
+    timeout: ReturnType<typeof setTimeout>;
+  }
+>();
 
 function resetPending(error: Error) {
   pending.forEach(({ reject, timeout }) => {
@@ -69,7 +72,11 @@ export async function pingViaNative(): Promise<boolean> {
 }
 
 export async function sendViaNative(payload: ClipPayload, options?: { backendBaseUrl?: string }) {
-  const response = await sendNativeRequest({ kind: 'clip', payload, backendBaseUrl: options?.backendBaseUrl });
+  const response = await sendNativeRequest({
+    kind: 'clip',
+    payload,
+    backendBaseUrl: options?.backendBaseUrl
+  });
   if (!response?.ok) {
     throw new Error(response?.error || 'Native messaging host reported an error');
   }

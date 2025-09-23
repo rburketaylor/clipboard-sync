@@ -9,7 +9,10 @@ describe('Popup.vue', () => {
   beforeEach(() => {
     sendMessageMock = vi.fn(async (msg: any) => {
       if (msg.kind === 'popupOpened') {
-        return { selection: 'hello world', tabMeta: { href: 'https://example.com', title: 'Example' } };
+        return {
+          selection: 'hello world',
+          tabMeta: { href: 'https://example.com', title: 'Example' }
+        };
       }
       if (msg.kind === 'sendClip') {
         return { ok: true };
@@ -31,7 +34,7 @@ describe('Popup.vue', () => {
   it('renders selection and tab meta on mount', async () => {
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
     expect(wrapper.text()).toContain('hello world');
     expect(wrapper.text()).toContain('Example');
   });
@@ -39,12 +42,15 @@ describe('Popup.vue', () => {
   it('sends text when clicking Send Text', async () => {
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
-    const btn = wrapper.findAll('button').find(b => b.text().includes('Send Text'))!;
+    await new Promise((r) => setTimeout(r, 0));
+    const btn = wrapper.findAll('button').find((b) => b.text().includes('Send Text'))!;
     expect(btn.attributes('disabled')).toBeUndefined();
     await btn.trigger('click');
     expect((global as any).chrome.runtime.sendMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: 'sendClip', payload: expect.objectContaining({ type: 'text' }) })
+      expect.objectContaining({
+        kind: 'sendClip',
+        payload: expect.objectContaining({ type: 'text' })
+      })
     );
   });
 
@@ -58,9 +64,9 @@ describe('Popup.vue', () => {
 
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
-    const urlButton = wrapper.findAll('button').find(b => b.text().includes('Send URL'))!;
+    const urlButton = wrapper.findAll('button').find((b) => b.text().includes('Send URL'))!;
     expect(urlButton.attributes('disabled')).toBe('');
   });
 
@@ -77,9 +83,9 @@ describe('Popup.vue', () => {
 
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
-    const textButton = wrapper.findAll('button').find(b => b.text().includes('Send Text'))!;
+    const textButton = wrapper.findAll('button').find((b) => b.text().includes('Send Text'))!;
     await textButton.trigger('click');
     await nextTick();
 
@@ -89,7 +95,7 @@ describe('Popup.vue', () => {
   it('opens options page via link', async () => {
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
     await wrapper.find('a').trigger('click.prevent');
     expect((global as any).chrome.runtime.openOptionsPage).toHaveBeenCalled();
@@ -102,7 +108,7 @@ describe('Popup.vue', () => {
         return { selection: 'text', tabMeta: { href: 'https://example.com', title: 'Example' } };
       }
       if (msg.kind === 'sendClip') {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           resolveSend = () => resolve({ ok: true });
         });
       }
@@ -111,10 +117,12 @@ describe('Popup.vue', () => {
 
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
-    const textButton = wrapper.findAll('button').find(b => b.text().includes('Sending')) || wrapper.findAll('button').find(b => b.text().includes('Send Text'))!;
-    const urlButton = wrapper.findAll('button').find(b => b.text().includes('Send URL'))!;
+    const textButton =
+      wrapper.findAll('button').find((b) => b.text().includes('Sending')) ||
+      wrapper.findAll('button').find((b) => b.text().includes('Send Text'))!;
+    const urlButton = wrapper.findAll('button').find((b) => b.text().includes('Send URL'))!;
     await textButton.trigger('click');
     await nextTick();
 
@@ -123,7 +131,7 @@ describe('Popup.vue', () => {
 
     resolveSend?.();
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
     expect(textButton.text()).toBe('Send Text');
   });
 
@@ -135,13 +143,17 @@ describe('Popup.vue', () => {
 
     const wrapper = mount(Popup);
     await nextTick();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
-    const clipboardButton = wrapper.findAll('button').find(b => b.text().includes('Enable Clipboard'))!;
+    const clipboardButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Enable Clipboard'))!;
     await clipboardButton.trigger('click');
     await nextTick();
 
     expect(requestSpy).toHaveBeenCalled();
-    expect(sendMessageMock).toHaveBeenCalledWith(expect.objectContaining({ kind: 'sendClip', source: 'clipboard' }));
+    expect(sendMessageMock).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'sendClip', source: 'clipboard' })
+    );
   });
 });

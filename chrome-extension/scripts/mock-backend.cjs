@@ -10,7 +10,9 @@ const server = http.createServer((req, res) => {
     let body = '';
     req.on('data', (chunk) => (body += chunk));
     req.on('end', () => {
-      try { JSON.parse(body || '{}'); } catch (_) {}
+      try {
+        JSON.parse(body || '{}');
+      } catch (_) {}
       const json = JSON.stringify({ ok: true });
       res.writeHead(201, { 'Content-Type': 'application/json' });
       res.end(json);
@@ -30,4 +32,3 @@ const server = http.createServer((req, res) => {
 server.listen(port, () => {
   console.log(`Mock backend listening at http://localhost:${port}`);
 });
-

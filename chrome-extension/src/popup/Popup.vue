@@ -1,33 +1,61 @@
 <template>
   <div>
-    <h3 style="margin:0 0 8px;">Clipboard Sync</h3>
-    <p class="muted" style="margin:0 0 12px;">Capture selection, page URL, or your clipboard and send.</p>
+    <h3 style="margin: 0 0 8px">Clipboard Sync</h3>
+    <p class="muted" style="margin: 0 0 12px">
+      Capture selection, page URL, or your clipboard and send.
+    </p>
 
-    <section style="margin-bottom:10px;">
+    <section style="margin-bottom: 10px">
       <label class="muted">Selection</label>
-      <pre style="white-space:pre-wrap; background:#f6f8fa; padding:8px; border-radius:6px; max-height:120px; overflow:auto;">{{ selection || 'No selection detected' }}</pre>
+      <pre
+        style="
+          white-space: pre-wrap;
+          background: #f6f8fa;
+          padding: 8px;
+          border-radius: 6px;
+          max-height: 120px;
+          overflow: auto;
+        "
+        >{{ selection || 'No selection detected' }}</pre
+      >
     </section>
 
-    <section style="margin-bottom:10px;">
+    <section style="margin-bottom: 10px">
       <label class="muted">Active Tab</label>
-      <div style="font-size:12px; color:#333;">
+      <div style="font-size: 12px; color: #333">
         <div><strong>Title:</strong> {{ tabMeta?.title || '—' }}</div>
-        <div style="overflow:hidden; text-overflow:ellipsis;"><strong>URL:</strong> {{ tabMeta?.href || '—' }}</div>
+        <div style="overflow: hidden; text-overflow: ellipsis">
+          <strong>URL:</strong> {{ tabMeta?.href || '—' }}
+        </div>
       </div>
     </section>
 
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button :disabled="!selection || busy" @click="send('text')">{{ busy ? 'Sending…' : 'Send Text' }}</button>
-      <button :disabled="!urlAllowed || busy" @click="send('url')">{{ busy ? 'Sending…' : 'Send URL' }}</button>
-      <button :disabled="busy || (!clipboardReady && !clipboardPromptable)" @click="send('clipboard')">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <button :disabled="!selection || busy" @click="send('text')">
+        {{ busy ? 'Sending…' : 'Send Text' }}
+      </button>
+      <button :disabled="!urlAllowed || busy" @click="send('url')">
+        {{ busy ? 'Sending…' : 'Send URL' }}
+      </button>
+      <button
+        :disabled="busy || (!clipboardReady && !clipboardPromptable)"
+        @click="send('clipboard')"
+      >
         {{ busy ? 'Sending…' : clipboardButtonLabel }}
       </button>
     </div>
 
-    <p v-if="clipboardNotice" class="muted" style="margin-top:8px; font-size:12px;">{{ clipboardNotice }}</p>
+    <p v-if="clipboardNotice" class="muted" style="margin-top: 8px; font-size: 12px">
+      {{ clipboardNotice }}
+    </p>
 
-    <p v-if="message" :style="{color: messageOk ? '#0a7' : '#c00', marginTop: '10px', fontSize:'12px'}">{{ message }}</p>
-    <p style="margin-top:12px;"><a href="#" @click.prevent="openOptions">Options</a></p>
+    <p
+      v-if="message"
+      :style="{ color: messageOk ? '#0a7' : '#c00', marginTop: '10px', fontSize: '12px' }"
+    >
+      {{ message }}
+    </p>
+    <p style="margin-top: 12px"><a href="#" @click.prevent="openOptions">Options</a></p>
   </div>
 </template>
 
@@ -49,7 +77,9 @@ const urlAllowed = computed(() => {
 });
 
 const clipboardPromptable = computed(() => clipboardChecked.value && !clipboardReady.value);
-const clipboardButtonLabel = computed(() => (clipboardReady.value ? 'Send Clipboard' : 'Enable Clipboard'));
+const clipboardButtonLabel = computed(() =>
+  clipboardReady.value ? 'Send Clipboard' : 'Enable Clipboard'
+);
 const clipboardNotice = computed(() => {
   if (!clipboardChecked.value) return 'Checking clipboard permissions…';
   if (clipboardReady.value) return '';
@@ -62,20 +92,18 @@ function openOptions() {
 
 function containsClipboardPermission(): Promise<boolean> {
   if (!chrome?.permissions?.contains) return Promise.resolve(false);
-  return new Promise(resolve => {
-    chrome.permissions.contains(
-      { permissions: ['clipboardRead', 'clipboardWrite'] },
-      granted => resolve(Boolean(granted))
+  return new Promise((resolve) => {
+    chrome.permissions.contains({ permissions: ['clipboardRead', 'clipboardWrite'] }, (granted) =>
+      resolve(Boolean(granted))
     );
   });
 }
 
 function requestClipboardPermission(): Promise<boolean> {
   if (!chrome?.permissions?.request) return Promise.resolve(false);
-  return new Promise(resolve => {
-    chrome.permissions.request(
-      { permissions: ['clipboardRead', 'clipboardWrite'] },
-      granted => resolve(Boolean(granted))
+  return new Promise((resolve) => {
+    chrome.permissions.request({ permissions: ['clipboardRead', 'clipboardWrite'] }, (granted) =>
+      resolve(Boolean(granted))
     );
   });
 }
@@ -120,7 +148,7 @@ async function send(kind: 'text' | 'url' | 'clipboard') {
       payload ? { kind: 'sendClip', payload, source } : { kind: 'sendClip', source }
     );
     messageOk.value = !!res?.ok;
-    message.value = res?.ok ? 'Sent successfully' : (res?.error || 'Failed to send');
+    message.value = res?.ok ? 'Sent successfully' : res?.error || 'Failed to send';
   } catch (err: any) {
     messageOk.value = false;
     message.value = err?.message || String(err);
@@ -131,7 +159,7 @@ async function send(kind: 'text' | 'url' | 'clipboard') {
 
 onMounted(async () => {
   containsClipboardPermission()
-    .then(granted => {
+    .then((granted) => {
       clipboardReady.value = granted;
       clipboardChecked.value = true;
     })
@@ -155,8 +183,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.muted { color: #666; font-size: 12px; }
-button { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; background: #fff; }
-button:hover { background: #f3f4f6; }
-button:disabled { opacity: .6; cursor: not-allowed; }
+.muted {
+  color: #666;
+  font-size: 12px;
+}
+button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+button:hover {
+  background: #f3f4f6;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 </style>

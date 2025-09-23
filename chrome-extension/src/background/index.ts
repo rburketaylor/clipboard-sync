@@ -44,8 +44,8 @@ async function readSelectionFromActiveTab(): Promise<string | null> {
     func: pageReadSelection
   });
   const strings = results
-    .map(r => (typeof r.result === 'string' ? r.result.trim() : ''))
-    .filter(s => s.length > 0)
+    .map((r) => (typeof r.result === 'string' ? r.result.trim() : ''))
+    .filter((s) => s.length > 0)
     .sort((a, b) => b.length - a.length);
   return strings[0] ?? '';
 }
@@ -71,7 +71,7 @@ async function buildPayloadFromMessage(msg: any): Promise<ClipPayload> {
       content: text,
       mimeType: mimeType || DEFAULT_MIME_TYPE,
       source,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     };
   }
 
@@ -84,7 +84,7 @@ async function buildPayloadFromMessage(msg: any): Promise<ClipPayload> {
     ...payload,
     source,
     createdAt: new Date().toISOString(),
-    mimeType: payload.mimeType || (payload.type === 'url' ? 'text/uri-list' : DEFAULT_MIME_TYPE),
+    mimeType: payload.mimeType || (payload.type === 'url' ? 'text/uri-list' : DEFAULT_MIME_TYPE)
   };
 }
 
@@ -137,7 +137,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   return true;
 });
 
-chrome.commands?.onCommand.addListener(async command => {
+chrome.commands?.onCommand.addListener(async (command) => {
   if (command !== 'send-current-clipboard') return;
   try {
     await handleSendClip({ source: 'clipboard' });

@@ -24,9 +24,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "src/background/offscreen-clipboard.html"
-      ],
+      "resources": ["src/background/offscreen-clipboard.html"],
       "matches": ["*://*/*"]
     }
   ],

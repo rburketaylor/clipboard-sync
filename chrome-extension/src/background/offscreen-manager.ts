@@ -28,9 +28,9 @@ async function ensureDocument(): Promise<void> {
       .createDocument({
         url,
         reasons: ['CLIPBOARD'],
-        justification: 'Read clipboard contents for sync',
+        justification: 'Read clipboard contents for sync'
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Failed to create offscreen document', err);
         throw err;
       })
