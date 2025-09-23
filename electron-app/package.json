@@ -9,8 +9,8 @@
     "build": "electron-builder",
     "native-host": "electron . --native-host",
     "install-native-host": "node scripts/install-native-host.js",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "tests": "vitest run",
+    "tests:watch": "vitest"
   },
   "keywords": [
     "clipboard",

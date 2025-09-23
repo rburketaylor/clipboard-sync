@@ -6,15 +6,20 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
-    "test": "vitest run",
-    "test:ui": "vitest",
+    "tests": "vitest run ",
+    "tests:watch": "vitest",
     "lint": "eslint .",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
     "mock:backend": "node scripts/mock-backend.cjs",
     "zip": "npm run build && cd dist && zip -r ../clipboard-sync-extension.zip ."
   },
-  "keywords": ["clipboard", "sync", "chrome", "extension"],
+  "keywords": [
+    "clipboard",
+    "sync",
+    "chrome",
+    "extension"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
