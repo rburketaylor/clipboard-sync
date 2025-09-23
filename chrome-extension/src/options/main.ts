@@ -4,17 +4,15 @@ import { getConfig, setConfig, defaultConfig } from '../shared/storage';
 export const OptionsApp = {
   setup() {
     const backendBaseUrl = ref('');
-    const debug = ref(false);
     const saved = ref('');
 
     onMounted(async () => {
       const cfg = await getConfig();
       backendBaseUrl.value = cfg.backendBaseUrl ?? defaultConfig.backendBaseUrl;
-      debug.value = !!cfg.debug;
     });
 
     async function save() {
-      await setConfig({ backendBaseUrl: backendBaseUrl.value, debug: debug.value });
+      await setConfig({ backendBaseUrl: backendBaseUrl.value });
       saved.value = 'Saved!';
       setTimeout(() => (saved.value = ''), 1500);
     }
@@ -25,7 +23,7 @@ export const OptionsApp = {
       setTimeout(() => (saved.value = ''), 1500);
     }
 
-    return { backendBaseUrl, debug, save, saved, testConnection };
+    return { backendBaseUrl, save, saved, testConnection };
   },
   template: `
   <div style="max-width:420px;">
@@ -36,12 +34,6 @@ export const OptionsApp = {
       <label style="display:block; font-weight:600; margin-bottom:4px;">Backend Base URL</label>
       <input v-model="backendBaseUrl" placeholder="http://localhost:8000" style="width:100%; padding:6px 8px;" />
       <p class="muted" style="margin:6px 0 0; color:#777; font-size:12px;">The native host submits clips to this endpoint.</p>
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label style="display:flex; align-items:center; gap:6px;">
-        <input type="checkbox" v-model="debug" /> Enable debug logging
-      </label>
     </div>
 
     <div>

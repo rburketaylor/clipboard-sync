@@ -1,11 +1,9 @@
 export interface ExtensionConfig {
   backendBaseUrl: string;
-  debug: boolean;
 }
 
 export const defaultConfig: ExtensionConfig = {
-  backendBaseUrl: 'http://localhost:8000',
-  debug: false
+  backendBaseUrl: 'http://localhost:8000'
 };
 
 export async function getConfig(): Promise<ExtensionConfig> {

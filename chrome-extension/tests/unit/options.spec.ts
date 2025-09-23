@@ -8,7 +8,7 @@ const setConfig = vi.fn();
 vi.mock('../../src/shared/storage', () => ({
   getConfig,
   setConfig,
-  defaultConfig: { backendBaseUrl: 'http://localhost:8000', debug: false }
+  defaultConfig: { backendBaseUrl: 'http://localhost:8000' }
 }));
 
 async function flush() {
@@ -25,23 +25,20 @@ describe('options page', () => {
   });
 
   it('loads saved configuration on mount', async () => {
-    getConfig.mockResolvedValue({ backendBaseUrl: 'http://api.test', debug: true });
+    getConfig.mockResolvedValue({ backendBaseUrl: 'http://api.test' });
     const { OptionsApp } = await import('../../src/options/main');
 
     const wrapper = mount(OptionsApp);
     await flush();
 
     const input = wrapper.find('input');
-    const checkbox = wrapper.find('input[type="checkbox"]');
 
     expect(input.exists()).toBe(true);
-    expect(checkbox.exists()).toBe(true);
     expect((input.element as HTMLInputElement).value).toBe('http://api.test');
-    expect((checkbox.element as HTMLInputElement).checked).toBe(true);
   });
 
   it('persists configuration when Save is clicked', async () => {
-    getConfig.mockResolvedValue({ backendBaseUrl: 'http://api.test', debug: false });
+    getConfig.mockResolvedValue({ backendBaseUrl: 'http://api.test' });
     setConfig.mockResolvedValue(undefined);
     const { OptionsApp } = await import('../../src/options/main');
 
@@ -49,20 +46,18 @@ describe('options page', () => {
     await flush();
 
     const input = wrapper.find('input');
-    const checkbox = wrapper.find('input[type="checkbox"]');
 
     await input.setValue('http://changed');
-    await checkbox.setValue(true);
 
     await wrapper.findAll('button')[0].trigger('click');
     await flush();
 
-    expect(setConfig).toHaveBeenCalledWith({ backendBaseUrl: 'http://changed', debug: true });
+    expect(setConfig).toHaveBeenCalledWith({ backendBaseUrl: 'http://changed' });
     expect(wrapper.text()).toContain('Saved!');
   });
 
   it('displays connection status when Test Connection runs', async () => {
-    getConfig.mockResolvedValue({ backendBaseUrl: 'http://api.test', debug: false });
+    getConfig.mockResolvedValue({ backendBaseUrl: 'http://api.test' });
     const sendMessage = vi.fn().mockResolvedValueOnce({ ok: true }).mockResolvedValueOnce({ ok: false });
     (global as any).chrome.runtime.sendMessage = sendMessage;
 

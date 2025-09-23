@@ -8,9 +8,8 @@ describe('storage config', () => {
   });
 
   it('persists and reads config values', async () => {
-    await setConfig({ backendBaseUrl: 'http://localhost:9999', debug: true });
+    await setConfig({ backendBaseUrl: 'http://localhost:9999' });
     const cfg = await getConfig();
     expect(cfg.backendBaseUrl).toBe('http://localhost:9999');
-    expect(cfg.debug).toBe(true);
   });
 });

@@ -3,12 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const listeners: Array<(msg: any, sender: any, sendResponse: (res: any) => void) => boolean> = [];
 
 vi.mock('../../src/shared/storage', () => ({
-  getConfig: vi.fn(async () => ({ backendBaseUrl: 'http://localhost:8000', debug: false }))
+  getConfig: vi.fn(async () => ({ backendBaseUrl: 'http://localhost:8000' }))
 }));
 
 const sendViaNative = vi.fn(async () => {});
 const pingViaNative = vi.fn(async () => true);
-const readClipboardFromOffscreen = vi.fn(async () => ({ text: 'clipboard text', mimeType: 'text/plain' }));
+const readClipboardFromOffscreen = vi.fn(async () => ({
+  text: 'clipboard text',
+  mimeType: 'text/plain'
+}));
 const teardownOffscreenIfIdle = vi.fn(async () => {});
 
 vi.mock('../../src/background/transports/native', () => ({
@@ -28,7 +31,7 @@ async function loadBackground() {
 
 function invokeListener(message: any) {
   const listener = listeners[0];
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     listener(message, {}, (response: any) => resolve(response));
   });
 }
@@ -57,10 +60,7 @@ describe('background message router', () => {
   it('responds to popupOpened with selection and tab meta', async () => {
     const executeScript = vi
       .fn()
-      .mockResolvedValueOnce([
-        { result: '  selection text  ' },
-        { result: '' }
-      ])
+      .mockResolvedValueOnce([{ result: '  selection text  ' }, { result: '' }])
       .mockResolvedValueOnce([{ result: { href: 'https://example.com', title: 'Example' } }]);
     (global as any).chrome.scripting.executeScript = executeScript;
 
@@ -81,7 +81,12 @@ describe('background message router', () => {
     const response: any = await invokeListener(payload);
 
     expect(sendViaNative).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'text', content: 'hi', source: 'selection', mimeType: 'text/plain' }),
+      expect.objectContaining({
+        type: 'text',
+        content: 'hi',
+        source: 'selection',
+        mimeType: 'text/plain'
+      }),
       expect.objectContaining({ backendBaseUrl: 'http://localhost:8000' })
     );
     expect(response).toEqual({ ok: true, error: undefined });
@@ -103,7 +108,10 @@ describe('background message router', () => {
     sendViaNative.mockRejectedValueOnce(new Error('boom'));
     await loadBackground();
 
-    const response: any = await invokeListener({ kind: 'sendClip', payload: { type: 'text', content: 'x' } });
+    const response: any = await invokeListener({
+      kind: 'sendClip',
+      payload: { type: 'text', content: 'x' }
+    });
 
     expect(response.ok).toBe(false);
     expect(response.error).toBe('boom');
@@ -124,7 +132,10 @@ describe('background message router', () => {
 
   it('reads clipboard when requested', async () => {
     (global as any).chrome.scripting.executeScript = vi.fn();
-    readClipboardFromOffscreen.mockResolvedValueOnce({ text: 'from clipboard', mimeType: 'text/plain' });
+    readClipboardFromOffscreen.mockResolvedValueOnce({
+      text: 'from clipboard',
+      mimeType: 'text/plain'
+    });
     await loadBackground();
 
     const response: any = await invokeListener({ kind: 'sendClip', source: 'clipboard' });
