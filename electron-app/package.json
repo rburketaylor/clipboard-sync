@@ -22,10 +22,10 @@
   "license": "MIT",
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
-    "electron": "^38.1.2",
-    "electron-builder": "^26.0.12",
+    "electron": "^39.8.10",
+    "electron-builder": "^26.15.3",
     "jsdom": "^27.0.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.6"
   },
   "build": {
     "appId": "com.clipboardsync.electron",
