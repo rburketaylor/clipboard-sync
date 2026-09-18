@@ -21,7 +21,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@testing-library/dom": "^10.4.0",
+    "@testing-library/dom": "^10.4.2",
     "electron": "^42.11.5",
     "electron-builder": "^26.15.3",
     "jsdom": "^30.1.0",
