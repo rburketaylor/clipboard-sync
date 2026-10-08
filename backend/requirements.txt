@@ -51,7 +51,7 @@ pygments==2.21.0
     # via pytest
 pytest==9.1.1
     # via -r requirements.in
-python-dotenv==1.2.3
+python-dotenv==1.2.4
     # via
     #   -r requirements.in
     #   uvicorn
